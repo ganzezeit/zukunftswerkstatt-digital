@@ -113,7 +113,36 @@ function PngButton({ src, alt, size, onClick, title }) {
   );
 }
 
-export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, className: klassenName }) {
+// --- Save status indicator ---
+function SaveIndicator({ status }) {
+  if (!status) return null;
+  const config = {
+    idle:   { text: '\u2601\uFE0F', color: '#999',    opacity: 0.35, animation: undefined },
+    saving: { text: '\u2601\uFE0F', color: '#999',    opacity: 0.6,  animation: 'pulse 1.2s ease-in-out infinite' },
+    saved:  { text: '\u2713',       color: '#00C48C',  opacity: 1,    animation: undefined },
+    error:  { text: '\u26A0',       color: '#E65100',  opacity: 1,    animation: undefined },
+  };
+  const c = config[status] || config.idle;
+  return (
+    <div style={{
+      width: 24,
+      height: 24,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 16,
+      color: c.color,
+      opacity: c.opacity,
+      transition: 'opacity 0.3s, color 0.3s',
+      animation: c.animation,
+      fontWeight: 'bold',
+    }} title={status === 'saved' ? 'Gespeichert' : status === 'saving' ? 'Wird gespeichert...' : status === 'error' ? 'Speicherfehler' : 'Cloud'}>
+      {c.text}
+    </div>
+  );
+}
+
+export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, className: klassenName, saveStatus }) {
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
   const [muted, setMuted] = useState(false);
@@ -240,6 +269,7 @@ export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId,
           />
         )}
         <EnergyBar energy={energy} />
+        {saveStatus && <SaveIndicator status={saveStatus} />}
         <PngButton
           src="/images/ui/button-skip.png"
           alt={'\u23ED'}

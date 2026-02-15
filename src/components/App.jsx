@@ -51,6 +51,11 @@ export default function App() {
   });
   const isRemoteUpdateRef = useRef(false);
 
+  // Save status tracking
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+  const [lastSaveTimestamp, setLastSaveTimestamp] = useState(null);
+  const saveResetTimerRef = useRef(null);
+
   // Transition state
   const [transitionPhase, setTransitionPhase] = useState('visible'); // 'visible' | 'fading-out' | 'fading-in'
   const pendingScreen = useRef(null);
@@ -93,6 +98,42 @@ export default function App() {
 
   const screenOpacity = transitionPhase === 'fading-out' ? 0 : 1;
 
+  // Save result callback
+  const handleSaveResult = useCallback(({ success, timestamp }) => {
+    if (saveResetTimerRef.current) clearTimeout(saveResetTimerRef.current);
+    if (success) {
+      setSaveStatus('saved');
+      setLastSaveTimestamp(timestamp);
+    } else {
+      setSaveStatus('error');
+    }
+    saveResetTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000);
+  }, []);
+
+  // Manual force save
+  const handleForceSave = useCallback(async () => {
+    if (!className) return false;
+    setSaveStatus('saving');
+    try {
+      const { forceSaveClassState } = await import('../utils/firebasePersistence');
+      const ok = await forceSaveClassState(className, state);
+      if (saveResetTimerRef.current) clearTimeout(saveResetTimerRef.current);
+      if (ok) {
+        setSaveStatus('saved');
+        setLastSaveTimestamp(Date.now());
+      } else {
+        setSaveStatus('error');
+      }
+      saveResetTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      return ok;
+    } catch {
+      setSaveStatus('error');
+      if (saveResetTimerRef.current) clearTimeout(saveResetTimerRef.current);
+      saveResetTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      return false;
+    }
+  }, [className, state]);
+
   // Persist on every state change (localStorage always as fallback)
   useEffect(() => { saveState(state); }, [state]);
   useEffect(() => { setVolume(state.volume); }, [state.volume]);
@@ -102,8 +143,12 @@ export default function App() {
     if (!className) return;
     let unsub = () => {};
     let cancelled = false;
-    import('../utils/firebasePersistence').then(({ subscribeToClass, setIsRemoteUpdate: setRemote }) => {
+    import('../utils/firebasePersistence').then(({ subscribeToClass, setIsRemoteUpdate: setRemote, getLastUpdated }) => {
       if (cancelled) return;
+      // Populate initial lastSaveTimestamp
+      getLastUpdated(className).then((ts) => {
+        if (!cancelled && ts) setLastSaveTimestamp(ts);
+      });
       unsub = subscribeToClass(className, (remoteState) => {
         if (remoteState === null) return; // New class — no data yet
         try {
@@ -130,10 +175,11 @@ export default function App() {
   useEffect(() => {
     if (!className) return;
     if (isRemoteUpdateRef.current) return;
+    setSaveStatus('saving');
     import('../utils/firebasePersistence').then(({ saveClassState }) => {
-      if (!isRemoteUpdateRef.current) saveClassState(className, state);
+      if (!isRemoteUpdateRef.current) saveClassState(className, state, handleSaveResult);
     }).catch(err => console.error('[App] Firebase save error:', err));
-  }, [state, className]);
+  }, [state, className, handleSaveResult]);
 
   // Pre-init audioManager on mount (async, no user gesture needed)
   useEffect(() => {
@@ -505,6 +551,7 @@ export default function App() {
         isIntro={isIntroScreen}
         onOpenBoard={!isIntroScreen ? () => setShowQuickBoard(true) : undefined}
         className={className}
+        saveStatus={className ? saveStatus : null}
       />
 
       {/* Screen content with fade transitions */}
@@ -591,6 +638,8 @@ export default function App() {
           onSwitchClass={handleSwitchClass}
           onNewClass={handleNewClass}
           onResetClass={handleResetClass}
+          onForceSave={handleForceSave}
+          lastSaveTimestamp={lastSaveTimestamp}
         />
         </Suspense>
       )}

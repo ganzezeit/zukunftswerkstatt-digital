@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DAYS } from '../data/days';
 import { playClickSound } from '../utils/audio';
+
+function formatGermanDate(timestamp) {
+  if (!timestamp) return null;
+  const d = new Date(timestamp);
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    + ', ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
 
 export default function TeacherPanel({
   currentDay,
@@ -20,8 +27,25 @@ export default function TeacherPanel({
   onSwitchClass,
   onNewClass,
   onResetClass,
+  onForceSave,
+  lastSaveTimestamp,
 }) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [localSaveStatus, setLocalSaveStatus] = useState('idle');
+  const saveTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, []);
+
+  const handleManualSave = async () => {
+    if (!onForceSave || localSaveStatus === 'saving') return;
+    setLocalSaveStatus('saving');
+    const ok = await onForceSave();
+    setLocalSaveStatus(ok ? 'saved' : 'error');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => setLocalSaveStatus('idle'), 2500);
+  };
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -131,6 +155,37 @@ export default function TeacherPanel({
               : '\u{1F5D1}\uFE0F Alles zur\u00fccksetzen'}
           </button>
         </div>
+
+        {/* Save section */}
+        {klassenName && onForceSave && (
+          <>
+            <div style={styles.sectionHeader}>Spielstand</div>
+            {lastSaveTimestamp && (
+              <div style={styles.stateBox}>
+                <div style={styles.stateRow}>
+                  <span style={styles.stateLabel}>Letzter Spielstand:</span>
+                  <span style={styles.stateValue}>{formatGermanDate(lastSaveTimestamp)}</span>
+                </div>
+              </div>
+            )}
+            <div style={styles.actions}>
+              <button
+                style={{
+                  ...styles.actionButton,
+                  ...(localSaveStatus === 'saved' ? styles.energyButton : {}),
+                  ...(localSaveStatus === 'error' ? styles.dangerButtonIdle : {}),
+                }}
+                onClick={handleManualSave}
+                disabled={localSaveStatus === 'saving'}
+              >
+                {localSaveStatus === 'idle' && '\u{1F4BE} Spielstand speichern'}
+                {localSaveStatus === 'saving' && '\u23F3 Wird gespeichert...'}
+                {localSaveStatus === 'saved' && '\u2705 Gespeichert!'}
+                {localSaveStatus === 'error' && '\u274C Fehler beim Speichern'}
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Class section */}
         {klassenName && (

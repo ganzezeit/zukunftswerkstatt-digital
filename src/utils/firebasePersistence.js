@@ -74,35 +74,66 @@ export function subscribeToClass(className, callback) {
 }
 
 /**
+ * Prepare state for Firebase: strip volume, ensure arrays/objects.
+ */
+function prepareSafeState(state) {
+  const { volume, ...stateWithoutVolume } = state;
+  return {
+    ...stateWithoutVolume,
+    completedDays: Array.isArray(stateWithoutVolume.completedDays) ? stateWithoutVolume.completedDays : [],
+    usedEnergizers: Array.isArray(stateWithoutVolume.usedEnergizers) ? stateWithoutVolume.usedEnergizers : [],
+  };
+}
+
+/**
  * Save class state to Firebase (debounced).
  * Strips volume (device-specific).
+ * Optional 3rd param: callback({ success, timestamp }) called after save completes/fails.
  */
-export function saveClassState(className, state) {
+export function saveClassState(className, state, onSaveResult) {
   if (isRemoteUpdate) return;
   if (!className) return;
 
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     try {
-      const { volume, ...stateWithoutVolume } = state;
-      // Ensure arrays stay as arrays for Firebase (convert empty to placeholder)
-      const safeState = {
-        ...stateWithoutVolume,
-        completedDays: Array.isArray(stateWithoutVolume.completedDays) ? stateWithoutVolume.completedDays : [],
-        usedEnergizers: Array.isArray(stateWithoutVolume.usedEnergizers) ? stateWithoutVolume.usedEnergizers : [],
-      };
+      const safeState = prepareSafeState(state);
       const stateRef = ref(db, 'classes/' + className + '/state');
+      const timestamp = Date.now();
       set(stateRef, safeState)
         .then(() => {
-          set(ref(db, 'classes/' + className + '/lastUpdated'), Date.now()).catch(() => {});
+          set(ref(db, 'classes/' + className + '/lastUpdated'), timestamp).catch(() => {});
+          if (onSaveResult) onSaveResult({ success: true, timestamp });
         })
         .catch((err) => {
           console.error('[firebasePersistence] Error saving class state:', err);
+          if (onSaveResult) onSaveResult({ success: false, timestamp: null });
         });
     } catch (err) {
       console.error('[firebasePersistence] Error preparing save:', err);
+      if (onSaveResult) onSaveResult({ success: false, timestamp: null });
     }
   }, DEBOUNCE_MS);
+}
+
+/**
+ * Immediate (non-debounced) save. Cancels any pending debounce timer.
+ * Returns Promise<boolean>.
+ */
+export async function forceSaveClassState(className, state) {
+  if (!className) return false;
+  if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+  try {
+    const safeState = prepareSafeState(state);
+    const stateRef = ref(db, 'classes/' + className + '/state');
+    const timestamp = Date.now();
+    await set(stateRef, safeState);
+    await set(ref(db, 'classes/' + className + '/lastUpdated'), timestamp);
+    return true;
+  } catch (err) {
+    console.error('[firebasePersistence] Error force-saving:', err);
+    return false;
+  }
 }
 
 /**
@@ -117,6 +148,41 @@ export async function listClasses() {
   } catch (err) {
     console.error('[firebasePersistence] Error listing classes:', err);
     return [];
+  }
+}
+
+/**
+ * List all classes with details: { name, lastUpdated, state }.
+ * Sorted by lastUpdated descending (most recent first).
+ */
+export async function listClassesWithDetails() {
+  try {
+    const snap = await get(ref(db, 'classes'));
+    const data = snap.val();
+    if (!data) return [];
+    return Object.entries(data)
+      .map(([name, val]) => ({
+        name,
+        lastUpdated: val?.lastUpdated || null,
+        state: mergeWithDefaults(val?.state),
+      }))
+      .sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
+  } catch (err) {
+    console.error('[firebasePersistence] Error listing classes with details:', err);
+    return [];
+  }
+}
+
+/**
+ * Get lastUpdated timestamp for a class. Returns number or null.
+ */
+export async function getLastUpdated(className) {
+  try {
+    const snap = await get(ref(db, 'classes/' + className + '/lastUpdated'));
+    return snap.val() || null;
+  } catch (err) {
+    console.error('[firebasePersistence] Error getting lastUpdated:', err);
+    return null;
   }
 }
 
