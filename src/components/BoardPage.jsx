@@ -538,6 +538,7 @@ const s = {
     borderRadius: 16,
     padding: 14,
     boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    overflow: 'hidden',
   },
   colHeader: {
     fontFamily: "'Lilita One', cursive",
@@ -558,6 +559,9 @@ const s = {
     borderRadius: 12,
     padding: '10px 14px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+    maxWidth: '100%',
   },
   noteAuthor: {
     fontSize: 12,
@@ -579,6 +583,9 @@ const s = {
     color: '#333',
     fontWeight: 600,
     lineHeight: 1.4,
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+    whiteSpace: 'normal',
   },
   addForm: {
     display: 'flex',

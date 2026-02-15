@@ -841,6 +841,9 @@ const s = {
     boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
     position: 'relative',
     flexShrink: 0,
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+    maxWidth: '100%',
   },
   noteHeader: {
     display: 'flex',
@@ -878,6 +881,9 @@ const s = {
     fontWeight: 600,
     fontFamily: "'Fredoka', sans-serif",
     lineHeight: 1.4,
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+    whiteSpace: 'normal',
   },
   likeInfo: {
     fontSize: 13,
