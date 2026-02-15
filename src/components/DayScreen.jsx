@@ -41,14 +41,15 @@ function getTaskIconPath(title) {
 
 // Horizontal wave layout — left to right with gentle up-down wave.
 // Same style as the weekly overview map's day nodes.
-function computePositions(n) {
+function computePositions(n, dayId) {
   if (n <= 0) return [];
-  if (n === 1) return [{ x: 50, y: 35 }];
+  if (n === 1) return [{ x: 35, y: 20 }];
 
   const xStart = 15;
   const xEnd = 85;
-  const yHigh = 30;   // odd tasks (0, 2, 4…) slightly higher
-  const yLow = 42;    // even tasks (1, 3, 5…) slightly lower
+  const yOffset = dayId === 5 ? -18 : 0;
+  const yHigh = 30 + yOffset;   // odd tasks (0, 2, 4…) slightly higher
+  const yLow = 42 + yOffset;    // even tasks (1, 3, 5…) slightly lower
 
   const positions = [];
   for (let i = 0; i < n; i++) {
@@ -89,7 +90,7 @@ function TaskIcon({ src, alt, size, fallback, locked }) {
 }
 
 export default function DayScreen({ day, activeStepIndex, completedSteps, onStepClick, onBack }) {
-  const positions = useMemo(() => computePositions(day.steps.length), [day.steps.length]);
+  const positions = useMemo(() => computePositions(day.steps.length, day.id), [day.steps.length, day.id]);
 
   return (
     <div style={styles.container}>

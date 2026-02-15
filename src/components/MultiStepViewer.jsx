@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import GlossaryTooltip from './GlossaryTooltip';
 import LandeskundeViewer from './LandeskundeViewer';
 import MatchingGameSubStep from './MatchingGameSubStep';
+import BoardCreator from './BoardCreator';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
 import { playClickSound, playSuccessSound } from '../utils/audio';
@@ -10,6 +11,7 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
   const { content } = step;
   const subSteps = content.subSteps || [];
   const [currentSub, setCurrentSub] = useState(0);
+  const [showBoard, setShowBoard] = useState(false);
   const sub = subSteps[currentSub];
   const isLast = currentSub === subSteps.length - 1;
 
@@ -141,7 +143,24 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
             <GlossaryTooltip text={sub.note} />
           </div>
         )}
+
+        {sub.boardEnabled && (
+          <button
+            onClick={() => { playClickSound(); setShowBoard(true); }}
+            style={{ ...styles.boardBtn, background: dayColor }}
+          >
+            {'\u{1F4CB}'} Klassen-Board {'\u00f6'}ffnen
+          </button>
+        )}
       </div>
+
+      {showBoard && (
+        <BoardCreator
+          title={sub.title || 'Klassen-Board'}
+          dayColor={dayColor}
+          onClose={() => setShowBoard(false)}
+        />
+      )}
 
       <StickyButton isLast={isLast} dayColor={dayColor} onNext={handleNext} />
     </div>
@@ -349,5 +368,20 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
     marginTop: 24,
+  },
+  boardBtn: {
+    fontFamily: "'Lilita One', cursive",
+    fontSize: 20,
+    padding: '14px 36px',
+    color: 'white',
+    borderRadius: 30,
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+    marginTop: 16,
+    display: 'block',
+    width: 'fit-content',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
 };

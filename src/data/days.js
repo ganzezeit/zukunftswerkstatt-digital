@@ -189,6 +189,7 @@ export const DAYS = [
             {
               title: "Fragenwerkstatt",
               subType: "text",
+              boardEnabled: true,
               text: "Sammelt gute Fragen f\u00fcr die Kinder in Tansania! Pro Gruppe 4 Fragen zu den Themen: Pause und Freizeit, Schule und Lernen, Mitbestimmung, Alltag. Regel: Fragen m\u00fcssen offen und respektvoll sein!"
             },
             {
