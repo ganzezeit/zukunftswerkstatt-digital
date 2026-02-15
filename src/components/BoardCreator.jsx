@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ref, set, push, remove, onValue, get } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
@@ -13,22 +13,114 @@ function generateCode() {
 const DEFAULT_COLUMNS = ['Pause & Freizeit', 'Schule & Lernen', 'Mitbestimmung', 'Alltag'];
 const TIMEOUT_MS = 8000;
 
-function Lightbox({ src, onClose }) {
+// --- Photo Lightbox with navigation ---
+function PhotoLightbox({ photos, initialIndex, onClose }) {
+  const [index, setIndex] = useState(initialIndex);
+  const touchStart = useRef(null);
+
+  const goPrev = useCallback(() => setIndex(i => (i > 0 ? i - 1 : photos.length - 1)), [photos.length]);
+  const goNext = useCallback(() => setIndex(i => (i < photos.length - 1 ? i + 1 : 0)), [photos.length]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft') goPrev();
+      else if (e.key === 'ArrowRight') goNext();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose, goPrev, goNext]);
+
+  const handleTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStart.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStart.current;
+    if (Math.abs(diff) > 50) { diff > 0 ? goPrev() : goNext(); }
+    touchStart.current = null;
+  };
+
+  const photo = photos[index];
+  if (!photo) return null;
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 5000,
-      background: 'rgba(0,0,0,0.85)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      cursor: 'pointer', padding: 20,
-    }} onClick={onClose}>
+    <div
+      style={lbStyles.overlay}
+      onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Left arrow */}
+      {photos.length > 1 && (
+        <button onClick={(e) => { e.stopPropagation(); goPrev(); }} style={lbStyles.arrowLeft}>
+          {'\u2039'}
+        </button>
+      )}
+
       <img
-        src={src} alt="Foto"
-        style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 12, cursor: 'default' }}
+        src={photo.url}
+        alt="Foto"
+        style={lbStyles.image}
         onClick={(e) => e.stopPropagation()}
       />
+
+      {/* Right arrow */}
+      {photos.length > 1 && (
+        <button onClick={(e) => { e.stopPropagation(); goNext(); }} style={lbStyles.arrowRight}>
+          {'\u203A'}
+        </button>
+      )}
+
+      {/* Close button */}
+      <button onClick={onClose} style={lbStyles.closeBtn}>{'\u2715'}</button>
+
+      {/* Counter */}
+      {photos.length > 1 && (
+        <div style={lbStyles.counter}>{index + 1} / {photos.length}</div>
+      )}
     </div>
   );
 }
+
+const lbStyles = {
+  overlay: {
+    position: 'fixed', inset: 0, zIndex: 5000,
+    background: 'rgba(0,0,0,0.88)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  image: {
+    maxWidth: '80vw', maxHeight: '85vh',
+    objectFit: 'contain', borderRadius: 8, cursor: 'default',
+    transition: 'opacity 0.2s ease',
+  },
+  arrowLeft: {
+    position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+    background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
+    fontSize: 48, width: 56, height: 72, borderRadius: 12, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backdropFilter: 'blur(4px)',
+  },
+  arrowRight: {
+    position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
+    background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
+    fontSize: 48, width: 56, height: 72, borderRadius: 12, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backdropFilter: 'blur(4px)',
+  },
+  closeBtn: {
+    position: 'absolute', top: 16, right: 20,
+    background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
+    fontSize: 24, width: 44, height: 44, borderRadius: 22, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backdropFilter: 'blur(4px)',
+  },
+  counter: {
+    position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+    fontFamily: "'Fredoka', sans-serif", fontSize: 16, fontWeight: 600,
+    color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.4)',
+    padding: '6px 16px', borderRadius: 20,
+  },
+};
 
 // Confirmation dialog overlay
 function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
@@ -65,9 +157,23 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   const [savedBoards, setSavedBoards] = useState([]);
   const [showSavedBoards, setShowSavedBoards] = useState(false);
   const [viewingSavedBoard, setViewingSavedBoard] = useState(null);
-  const [lightboxSrc, setLightboxSrc] = useState(null);
+
+  // Lightbox state: index into allPhotos array, or null
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const cols = columns || DEFAULT_COLUMNS;
+
+  // Collect all photos from all posts for lightbox navigation
+  const allPhotos = useMemo(() => {
+    return posts
+      .filter(p => p.imageUrl)
+      .map(p => ({ url: p.imageUrl, key: p._key }));
+  }, [posts]);
+
+  const openLightbox = useCallback((imageUrl) => {
+    const idx = allPhotos.findIndex(p => p.url === imageUrl);
+    setLightboxIndex(idx >= 0 ? idx : 0);
+  }, [allPhotos]);
 
   // Create board on mount
   useEffect(() => {
@@ -82,8 +188,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
       console.error('[BoardCreator] Timeout');
       setStatus('error');
       setErrorMsg(
-        'Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.' +
-        '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database → Rules die Lese- und Schreibrechte aktivieren.'
+        'Verbindung fehlgeschlagen. Bitte pr\u00fcfe die Internetverbindung.' +
+        '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.'
       );
     }, TIMEOUT_MS);
 
@@ -105,7 +211,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
         setStatus('error');
         setErrorMsg(
           `Board konnte nicht erstellt werden: ${err.message || 'Unbekannter Fehler'}` +
-          '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database → Rules die Lese- und Schreibrechte aktivieren.'
+          '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.'
         );
       });
 
@@ -123,7 +229,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     const boardRef = ref(db, 'boards/' + newCode);
     const timeout = setTimeout(() => {
       setStatus('error');
-      setErrorMsg('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.');
+      setErrorMsg('Verbindung fehlgeschlagen. Bitte pr\u00fcfe die Internetverbindung.');
     }, TIMEOUT_MS);
 
     set(boardRef, {
@@ -171,8 +277,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   // --- Admin actions ---
   const handleCloseBoard = () => {
     setConfirm({
-      message: 'Board schließen? Schüler können dann nicht mehr schreiben.',
-      confirmLabel: 'Ja, schließen',
+      message: 'Board schlie\u00dfen? Sch\u00fcler k\u00f6nnen dann nicht mehr schreiben.',
+      confirmLabel: 'Ja, schlie\u00dfen',
       danger: false,
       action: () => {
         set(ref(db, 'boards/' + code + '/active'), false).catch((err) => {
@@ -185,8 +291,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
 
   const handleClearPosts = () => {
     setConfirm({
-      message: 'Alle Beiträge löschen? Das kann nicht rückgängig gemacht werden.',
-      confirmLabel: 'Ja, löschen',
+      message: 'Alle Beitr\u00e4ge l\u00f6schen? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.',
+      confirmLabel: 'Ja, l\u00f6schen',
       danger: true,
       action: () => {
         remove(ref(db, 'boards/' + code + '/posts')).catch((err) => {
@@ -199,8 +305,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
 
   const handleDeleteBoard = () => {
     setConfirm({
-      message: 'Board und alle Beiträge endgültig löschen?',
-      confirmLabel: 'Endgültig löschen',
+      message: 'Board und alle Beitr\u00e4ge endg\u00fcltig l\u00f6schen?',
+      confirmLabel: 'Endg\u00fcltig l\u00f6schen',
       danger: true,
       action: () => {
         remove(ref(db, 'boards/' + code)).catch((err) => {
@@ -218,7 +324,6 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   };
 
   const handleRefresh = () => {
-    // Force re-subscribe by toggling code briefly
     const currentCode = code;
     setCode(null);
     setTimeout(() => setCode(currentCode), 100);
@@ -308,14 +413,14 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
           {status === 'error' && (
             <>
               <div style={{ ...s.loadingText, color: '#CC3333' }}>
-                ⚠️ Verbindung fehlgeschlagen
+                {'\u26A0\uFE0F'} Verbindung fehlgeschlagen
               </div>
               <div style={s.errorText}>{errorMsg}</div>
               <div style={{ display: 'flex', gap: 12, marginTop: 16, justifyContent: 'center' }}>
                 <button onClick={handleRetry} style={{ ...s.retryBtn, background: dayColor }}>
-                  🔄 Nochmal versuchen
+                  {'\u{1F504}'} Nochmal versuchen
                 </button>
-                <button onClick={onClose} style={s.adminBtnGrey}>Zurück</button>
+                <button onClick={onClose} style={s.adminBtnGrey}>Zur{'\u00fc'}ck</button>
               </div>
             </>
           )}
@@ -337,81 +442,80 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
       )}
 
       <div style={s.container}>
-        {/* Header */}
+        {/* Row 1: Header bar */}
         <div style={s.header}>
-          <h1 style={{ ...s.title, color: dayColor }}>📋 Klassen-Board</h1>
-          <div style={s.adminRow}>
-            <button onClick={handleRefresh} style={s.adminBtn} title="Aktualisieren">{'\u{1F504}'}</button>
-            <button onClick={handleSaveBoard} style={s.adminBtnGreen}>{'\u{1F4BE}'} Board speichern</button>
-            <button onClick={handleClearPosts} style={s.adminBtnOrange}>Board leeren</button>
-            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Board schlie{'\u00df'}en</button>
-            <button onClick={handleDeleteBoard} style={s.adminBtnRed}>Board l{'\u00f6'}schen</button>
-          </div>
-        </div>
-
-        {/* F1: Saved Boards Section */}
-        {savedBoards.length > 0 && (
-          <div style={s.savedSection}>
-            <button
-              onClick={() => setShowSavedBoards(!showSavedBoards)}
-              style={s.savedToggle}
-            >
-              {'\u{1F4C1}'} Gespeicherte Boards ({savedBoards.length}) {showSavedBoards ? '\u25B2' : '\u25BC'}
-            </button>
-            {showSavedBoards && (
-              <div style={s.savedList}>
-                {savedBoards.map((sb) => {
-                  const postCount = sb.posts ? Object.keys(sb.posts).length : 0;
-                  const date = sb.savedAt ? new Date(sb.savedAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-                  return (
-                    <div key={sb._key} style={s.savedItem}>
-                      <div style={s.savedInfo}>
-                        <div style={s.savedTitle}>{sb.title}</div>
-                        <div style={s.savedMeta}>{date} &middot; {postCount} Beitr{'\u00e4'}ge</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => setViewingSavedBoard(sb)} style={s.savedBtnView}>Anzeigen</button>
-                        <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>L{'\u00f6'}schen</button>
-                      </div>
-                    </div>
-                  );
-                })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 style={{ ...s.title, color: dayColor }}>{'\u{1F4CB}'} Klassen-Board</h1>
+            {savedBoards.length > 0 && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowSavedBoards(!showSavedBoards)}
+                  style={s.savedToggleBtn}
+                >
+                  {'\u{1F4C1}'} ({savedBoards.length}) {showSavedBoards ? '\u25B2' : '\u25BC'}
+                </button>
+                {showSavedBoards && (
+                  <div style={s.savedDropdown}>
+                    {savedBoards.map((sb) => {
+                      const postCount = sb.posts ? Object.keys(sb.posts).length : 0;
+                      const date = sb.savedAt ? new Date(sb.savedAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+                      return (
+                        <div key={sb._key} style={s.savedItem}>
+                          <div style={s.savedInfo}>
+                            <div style={s.savedTitle}>{sb.title}</div>
+                            <div style={s.savedMeta}>{date} &middot; {postCount} Beitr{'\u00e4'}ge</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <button onClick={() => { setViewingSavedBoard(sb); setShowSavedBoards(false); }} style={s.savedBtnView}>Anzeigen</button>
+                            <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>L{'\u00f6'}schen</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-
-        {/* QR + Info */}
-        <div style={s.qrRow}>
-          <div style={s.qrCard}>
-            <QRCodeSVG value={boardUrl} size={180} level="M" />
-            <div style={s.codeLabel}>Code: <strong>{code}</strong></div>
-            <div style={s.urlLabel}>{boardUrl}</div>
+          <div style={s.adminRow}>
+            <button onClick={handleRefresh} style={s.adminBtn} title="Aktualisieren">{'\u{1F504}'}</button>
+            <button onClick={handleSaveBoard} style={s.adminBtnGreen}>{'\u{1F4BE}'} Speichern</button>
+            <button onClick={handleClearPosts} style={s.adminBtnOrange}>Leeren</button>
+            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
+            <button onClick={handleDeleteBoard} style={s.adminBtnRed}>L{'\u00f6'}schen</button>
           </div>
-          <div style={s.infoCard}>
-            <h2 style={{ ...s.infoTitle, color: dayColor }}>{title || 'Fragen-Werkstatt'}</h2>
-            <p style={s.infoText}>
-              📱 Scannt den QR-Code mit eurem Tablet oder Handy!
-            </p>
-            <p style={s.infoText}>
-              👥 {posts.length} Beiträge bisher
-            </p>
-            <div style={s.columnTags}>
+        </div>
+
+        {/* Row 2: Compact QR + info */}
+        <div style={s.qrRow}>
+          <div style={s.qrBox}>
+            <QRCodeSVG value={boardUrl} size={110} level="M" />
+          </div>
+          <div style={s.qrInfo}>
+            <div style={s.qrInfoTop}>
+              <span style={{ ...s.qrTitle, color: dayColor }}>{title || 'Fragen-Werkstatt'}</span>
+              <span style={s.qrCode}>Code: <strong>{code}</strong></span>
+              <span style={s.qrUrl}>{boardUrl}</span>
+            </div>
+            <div style={s.qrMeta}>
+              <span style={s.qrMetaItem}>{'\u{1F465}'} {posts.length} Beitr{'\u00e4'}ge</span>
               {cols.map((c, i) => (
-                <span key={i} style={{ ...s.colTag, borderColor: dayColor }}>{c}</span>
+                <span key={i} style={{ ...s.qrTag, borderColor: dayColor }}>{c}</span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Live board view */}
+        {/* Columns — fill remaining height */}
         <div style={s.boardArea}>
           <div style={s.colContainer}>
             {cols.map((colName, ci) => {
               const colPosts = posts.filter(p => p.column === ci);
               return (
                 <div key={ci} style={s.column}>
+                  {/* Sticky header */}
                   <div style={{ ...s.colHeader, color: dayColor }}>{colName}</div>
+                  {/* Scrollable posts */}
                   <div style={s.colPosts}>
                     {colPosts.map((p) => {
                       const likeCount = p.likes ? Object.keys(p.likes).length : 0;
@@ -432,8 +536,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                           {p.imageUrl && (
                             <img
                               src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
-                              style={{ width: '100%', borderRadius: 8, marginBottom: 4, cursor: 'pointer', objectFit: 'cover', maxHeight: 180 }}
-                              onClick={() => setLightboxSrc(p.imageUrl)}
+                              style={s.noteImage}
+                              onClick={() => openLightbox(p.imageUrl)}
                             />
                           )}
                           {p.text && <div style={s.noteText}>{p.text}</div>}
@@ -447,7 +551,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                       <div style={s.emptyCol}>Noch keine Beitr{'\u00e4'}ge</div>
                     )}
                   </div>
-                  {/* F3: Teacher input */}
+                  {/* Sticky footer: teacher input */}
                   <div style={s.teacherInput}>
                     <input
                       type="text"
@@ -472,7 +576,14 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
         </div>
       </div>
 
-      {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      {/* Photo lightbox with navigation */}
+      {lightboxIndex !== null && allPhotos.length > 0 && (
+        <PhotoLightbox
+          photos={allPhotos}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
 
       {/* F1: Read-only saved board overlay */}
       {viewingSavedBoard && (
@@ -482,7 +593,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
               <h2 style={{ ...s.title, color: dayColor, margin: 0 }}>{'\u{1F4CB}'} {viewingSavedBoard.title}</h2>
               <button onClick={() => setViewingSavedBoard(null)} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
             </div>
-            <div style={s.colContainer}>
+            <div style={s.savedColContainer}>
               {(viewingSavedBoard.columns || []).map((colName, ci) => {
                 const sbPosts = viewingSavedBoard.posts
                   ? Object.entries(viewingSavedBoard.posts)
@@ -490,7 +601,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                       .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0))
                   : [];
                 return (
-                  <div key={ci} style={s.column}>
+                  <div key={ci} style={s.savedColumn}>
                     <div style={{ ...s.colHeader, color: dayColor }}>{colName}</div>
                     <div style={s.colPosts}>
                       {sbPosts.map(([key, p]) => (
@@ -499,8 +610,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                           {p.imageUrl && (
                             <img
                               src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
-                              style={{ width: '100%', borderRadius: 8, marginBottom: 4, cursor: 'pointer', objectFit: 'cover', maxHeight: 180 }}
-                              onClick={() => setLightboxSrc(p.imageUrl)}
+                              style={s.noteImage}
                             />
                           )}
                           {p.text && <div style={s.noteText}>{p.text}</div>}
@@ -530,82 +640,406 @@ const s = {
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
+    flexDirection: 'column',
+    padding: '12px 16px',
+    overflow: 'hidden',
   },
   container: {
     width: '100%',
-    maxWidth: 1200,
-    maxHeight: '95vh',
+    maxWidth: 1400,
+    height: '100%',
+    margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: 16,
-    overflow: 'auto',
-    WebkitOverflowScrolling: 'touch',
+    gap: 8,
+    overflow: 'hidden',
   },
+  // Row 1: Header
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
+    flexShrink: 0,
   },
   title: {
     fontFamily: "'Lilita One', cursive",
-    fontSize: 28,
+    fontSize: 22,
     margin: 0,
   },
   adminRow: {
     display: 'flex',
-    gap: 8,
+    gap: 6,
     flexWrap: 'wrap',
     alignItems: 'center',
   },
   adminBtn: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 18,
-    padding: '8px 12px',
+    fontSize: 16,
+    padding: '6px 10px',
     background: 'rgba(0,0,0,0.05)',
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 8,
+    cursor: 'pointer',
+  },
+  adminBtnGreen: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    padding: '6px 12px',
+    background: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
     cursor: 'pointer',
   },
   adminBtnOrange: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 600,
-    padding: '8px 14px',
+    padding: '6px 12px',
     background: '#FF6B35',
     color: 'white',
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 8,
     cursor: 'pointer',
   },
   adminBtnGrey: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 600,
-    padding: '8px 14px',
+    padding: '6px 12px',
     background: 'rgba(0,0,0,0.08)',
     color: '#555',
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 8,
     cursor: 'pointer',
   },
   adminBtnRed: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 600,
-    padding: '8px 14px',
+    padding: '6px 12px',
     background: '#E74C3C',
     color: 'white',
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 8,
     cursor: 'pointer',
   },
+  // Row 2: Compact QR
+  qrRow: {
+    display: 'flex',
+    gap: 14,
+    alignItems: 'center',
+    background: 'white',
+    borderRadius: 14,
+    padding: '10px 16px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    flexShrink: 0,
+  },
+  qrBox: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  qrInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    minWidth: 0,
+  },
+  qrInfoTop: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  qrTitle: {
+    fontFamily: "'Lilita One', cursive",
+    fontSize: 18,
+  },
+  qrCode: {
+    fontFamily: "'Baloo 2', cursive",
+    fontSize: 16,
+    color: '#333',
+    letterSpacing: 2,
+  },
+  qrUrl: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    color: '#999',
+    wordBreak: 'break-all',
+  },
+  qrMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  qrMetaItem: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    color: '#555',
+    fontWeight: 600,
+  },
+  qrTag: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: 8,
+    border: '1.5px solid',
+    color: '#555',
+    background: 'rgba(255,255,255,0.8)',
+  },
+  // Board area — fills remaining space
+  boardArea: {
+    flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
+  },
+  colContainer: {
+    display: 'flex',
+    gap: 10,
+    height: '100%',
+    minWidth: 'min-content',
+    overflow: 'hidden',
+  },
+  column: {
+    flex: '1 1 0',
+    minWidth: 160,
+    maxWidth: 320,
+    background: 'rgba(255,255,255,0.7)',
+    borderRadius: 14,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  colHeader: {
+    fontFamily: "'Lilita One', cursive",
+    fontSize: 15,
+    textAlign: 'center',
+    padding: '8px 10px 6px',
+    borderBottom: '2px solid rgba(0,0,0,0.08)',
+    flexShrink: 0,
+  },
+  colPosts: {
+    flex: 1,
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    padding: '6px 8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  stickyNote: {
+    borderRadius: 10,
+    padding: '8px 12px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
+    position: 'relative',
+    flexShrink: 0,
+  },
+  noteHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  noteAuthor: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#8B5A2B',
+    marginBottom: 3,
+    opacity: 0.7,
+  },
+  deletePostBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: 14,
+    color: '#999',
+    padding: '2px 4px',
+    borderRadius: 6,
+    lineHeight: 1,
+  },
+  noteImage: {
+    width: '100%',
+    borderRadius: 8,
+    marginBottom: 4,
+    cursor: 'pointer',
+    objectFit: 'cover',
+    maxHeight: 180,
+  },
+  noteText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: 600,
+    fontFamily: "'Fredoka', sans-serif",
+    lineHeight: 1.4,
+  },
+  likeInfo: {
+    fontSize: 13,
+    color: '#E74C3C',
+    fontFamily: "'Fredoka', sans-serif",
+    fontWeight: 600,
+    marginTop: 4,
+  },
+  emptyCol: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    color: '#aaa',
+    fontWeight: 600,
+    textAlign: 'center',
+    padding: '16px 8px',
+    fontStyle: 'italic',
+  },
+  // Teacher input — sticky at bottom
+  teacherInput: {
+    display: 'flex',
+    gap: 4,
+    padding: '6px 8px',
+    borderTop: '1px solid rgba(0,0,0,0.06)',
+    flexShrink: 0,
+  },
+  teacherInputField: {
+    flex: 1,
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 13,
+    fontWeight: 500,
+    padding: '6px 8px',
+    border: '1px solid rgba(0,0,0,0.12)',
+    borderRadius: 8,
+    outline: 'none',
+    background: '#FAFAFA',
+    minWidth: 0,
+  },
+  teacherSendBtn: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '6px 10px',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  // Saved boards dropdown
+  savedToggleBtn: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#555',
+    background: 'rgba(0,0,0,0.05)',
+    border: 'none',
+    borderRadius: 8,
+    padding: '6px 10px',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  savedDropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    marginTop: 4,
+    background: 'white',
+    borderRadius: 12,
+    padding: 8,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+    zIndex: 100,
+    minWidth: 280,
+    maxHeight: 300,
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  savedItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '6px 10px',
+    background: '#F8F8F8',
+    borderRadius: 8,
+    gap: 6,
+  },
+  savedInfo: { flex: 1, minWidth: 0 },
+  savedTitle: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#333',
+  },
+  savedMeta: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 11,
+    color: '#999',
+    fontWeight: 500,
+  },
+  savedBtnView: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '4px 10px',
+    background: '#E3F2FD',
+    color: '#1976D2',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  savedBtnDelete: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '4px 10px',
+    background: '#FFEBEE',
+    color: '#C62828',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  // Saved board overlay
+  savedOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 2500,
+    background: 'rgba(255, 250, 245, 0.97)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    overflowY: 'auto',
+  },
+  savedOverlayCard: {
+    width: '100%',
+    maxWidth: 1200,
+    maxHeight: '90vh',
+    overflowX: 'auto',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+  },
+  savedColContainer: {
+    display: 'flex',
+    gap: 12,
+    minHeight: 200,
+    minWidth: 'min-content',
+  },
+  savedColumn: {
+    flex: '1 1 0',
+    minWidth: 160,
+    maxWidth: 300,
+    background: 'rgba(255,255,255,0.7)',
+    borderRadius: 14,
+    padding: 10,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+  },
+  // Loading / Error
   loadingText: {
     fontFamily: "'Lilita One', cursive",
     fontSize: 24,
@@ -650,291 +1084,7 @@ const s = {
     alignItems: 'center',
     maxWidth: 550,
     width: '100%',
-  },
-  qrRow: {
-    display: 'flex',
-    gap: 20,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  qrCard: {
-    background: 'white',
-    borderRadius: 20,
-    padding: '24px 28px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 12,
-  },
-  codeLabel: {
-    fontFamily: "'Baloo 2', cursive",
-    fontSize: 22,
-    color: '#333',
-    letterSpacing: 3,
-  },
-  urlLabel: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 13,
-    color: '#999',
-    wordBreak: 'break-all',
-    textAlign: 'center',
-    maxWidth: 220,
-  },
-  infoCard: {
-    background: 'white',
-    borderRadius: 20,
-    padding: '24px 28px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-    flex: '1 1 300px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  infoTitle: {
-    fontFamily: "'Lilita One', cursive",
-    fontSize: 22,
-    margin: 0,
-  },
-  infoText: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 18,
-    color: '#555',
-    fontWeight: 600,
-    margin: 0,
-  },
-  columnTags: {
-    display: 'flex',
-    gap: 8,
-    flexWrap: 'wrap',
-    marginTop: 4,
-  },
-  colTag: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
-    fontWeight: 600,
-    padding: '4px 12px',
-    borderRadius: 10,
-    border: '2px solid',
-    color: '#555',
-    background: 'rgba(255,255,255,0.8)',
-  },
-  boardArea: {
-    flex: 1,
-    minHeight: 0,
-    overflowX: 'auto',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-  },
-  colContainer: {
-    display: 'flex',
-    gap: 12,
-    minHeight: 200,
-    minWidth: 'min-content',
-  },
-  column: {
-    flex: '1 1 0',
-    minWidth: 160,
-    maxWidth: 300,
-    background: 'rgba(255,255,255,0.7)',
-    borderRadius: 16,
-    padding: 10,
-    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-  },
-  colHeader: {
-    fontFamily: "'Lilita One', cursive",
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 8,
-    paddingBottom: 6,
-    borderBottom: '2px solid rgba(0,0,0,0.08)',
-  },
-  colPosts: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-  },
-  stickyNote: {
-    borderRadius: 10,
-    padding: '8px 12px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
-    position: 'relative',
-  },
-  noteHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  noteAuthor: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: '#8B5A2B',
-    marginBottom: 3,
-    opacity: 0.7,
-  },
-  deletePostBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: 14,
-    color: '#999',
-    padding: '2px 4px',
-    borderRadius: 6,
-    lineHeight: 1,
-  },
-  noteText: {
-    fontSize: 15,
-    color: '#333',
-    fontWeight: 600,
-    fontFamily: "'Fredoka', sans-serif",
-    lineHeight: 1.4,
-  },
-  likeInfo: {
-    fontSize: 13,
-    color: '#E74C3C',
-    fontFamily: "'Fredoka', sans-serif",
-    fontWeight: 600,
-    marginTop: 4,
-  },
-  emptyCol: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
-    color: '#aaa',
-    fontWeight: 600,
-    textAlign: 'center',
-    padding: '16px 8px',
-    fontStyle: 'italic',
-  },
-  // F1: Save button (green)
-  adminBtnGreen: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
-    fontWeight: 600,
-    padding: '8px 14px',
-    background: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: 10,
-    cursor: 'pointer',
-  },
-  // F1: Saved boards section
-  savedSection: {
-    background: 'white',
-    borderRadius: 16,
-    padding: '12px 16px',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-  },
-  savedToggle: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#555',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px 0',
-    width: '100%',
-    textAlign: 'left',
-  },
-  savedList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    marginTop: 10,
-  },
-  savedItem: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '8px 12px',
-    background: '#F8F8F8',
-    borderRadius: 10,
-  },
-  savedInfo: { flex: 1 },
-  savedTitle: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#333',
-  },
-  savedMeta: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 12,
-    color: '#999',
-    fontWeight: 500,
-  },
-  savedBtnView: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 13,
-    fontWeight: 600,
-    padding: '6px 12px',
-    background: '#E3F2FD',
-    color: '#1976D2',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-  },
-  savedBtnDelete: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 13,
-    fontWeight: 600,
-    padding: '6px 12px',
-    background: '#FFEBEE',
-    color: '#C62828',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-  },
-  // F1: Saved board overlay
-  savedOverlay: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 2500,
-    background: 'rgba(255, 250, 245, 0.97)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    overflowY: 'auto',
-  },
-  savedOverlayCard: {
-    width: '100%',
-    maxWidth: 1200,
-    maxHeight: '90vh',
-    overflowX: 'auto',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-  },
-  // F3: Teacher input styles
-  teacherInput: {
-    display: 'flex',
-    gap: 6,
-    marginTop: 8,
-    paddingTop: 8,
-    borderTop: '1px solid rgba(0,0,0,0.06)',
-  },
-  teacherInputField: {
-    flex: 1,
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
-    fontWeight: 500,
-    padding: '6px 10px',
-    border: '1px solid rgba(0,0,0,0.12)',
-    borderRadius: 8,
-    outline: 'none',
-    background: '#FAFAFA',
-  },
-  teacherSendBtn: {
-    fontFamily: "'Fredoka', sans-serif",
-    fontSize: 13,
-    fontWeight: 600,
-    padding: '6px 12px',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
+    margin: 'auto',
   },
   // Confirm dialog
   confirmOverlay: {
