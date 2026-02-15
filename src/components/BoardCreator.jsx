@@ -441,10 +441,11 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
         />
       )}
 
-      <div style={s.container}>
-        {/* Row 1: Header bar */}
-        <div style={s.header}>
+      <div style={s.container} className="board-creator-container">
+        {/* Row 1: Back + title + actions */}
+        <div style={s.headerRow1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={onClose} style={s.backBtn}>{'\u2190'}</button>
             <h1 style={{ ...s.title, color: dayColor }}>{'\u{1F4CB}'} Klassen-Board</h1>
             {savedBoards.length > 0 && (
               <div style={{ position: 'relative' }}>
@@ -480,47 +481,50 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
           <div style={s.adminRow}>
             <button onClick={handleRefresh} style={s.adminBtn} title="Aktualisieren">{'\u{1F504}'}</button>
             <button onClick={handleSaveBoard} style={s.adminBtnGreen}>{'\u{1F4BE}'} Speichern</button>
+            <button onClick={() => window.print()} style={s.adminBtnPdf}>{'\u{1F4C4}'} Als PDF</button>
             <button onClick={handleClearPosts} style={s.adminBtnOrange}>Leeren</button>
             <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
             <button onClick={handleDeleteBoard} style={s.adminBtnRed}>L{'\u00f6'}schen</button>
           </div>
         </div>
 
-        {/* Row 2: Compact QR + info */}
-        <div style={s.qrRow}>
-          <div style={s.qrBox}>
-            <QRCodeSVG value={boardUrl} size={110} level="M" />
-          </div>
-          <div style={s.qrInfo}>
-            <div style={s.qrInfoTop}>
-              <span style={{ ...s.qrTitle, color: dayColor }}>{title || 'Fragen-Werkstatt'}</span>
-              <span style={s.qrCode}>Code: <strong>{code}</strong></span>
-              <span style={s.qrUrl}>{boardUrl}</span>
-            </div>
-            <div style={s.qrMeta}>
-              <span style={s.qrMetaItem}>{'\u{1F465}'} {posts.length} Beitr{'\u00e4'}ge</span>
-              {cols.map((c, i) => (
-                <span key={i} style={{ ...s.qrTag, borderColor: dayColor }}>{c}</span>
-              ))}
+        {/* Print-only header */}
+        <div className="board-print-header" style={{ display: 'none' }}>
+          <h1 style={{ fontFamily: "'Lilita One', cursive", fontSize: 28, color: dayColor, margin: '0 0 4px' }}>
+            {title || 'Fragen-Werkstatt'} — Klassen-Board Export
+          </h1>
+          <p style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 14, color: '#666', margin: 0 }}>
+            {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} — {posts.length} Beitr{'\u00e4'}ge
+          </p>
+        </div>
+
+        {/* Row 2: Centered QR code + code + URL */}
+        <div style={s.qrBar}>
+          <div style={s.qrBarCenter}>
+            <QRCodeSVG value={boardUrl} size={80} level="M" />
+            <div style={s.qrBarInfo}>
+              <span style={s.qrBarCode}>Code: <strong>{code}</strong></span>
+              <span style={s.qrBarUrl}>{boardUrl}</span>
+              <span style={s.qrBarMeta}>{'\u{1F465}'} {posts.length} Beitr{'\u00e4'}ge</span>
             </div>
           </div>
         </div>
 
         {/* Columns — fill remaining height */}
-        <div style={s.boardArea}>
+        <div style={s.boardArea} className="board-columns-area">
           <div style={s.colContainer}>
             {cols.map((colName, ci) => {
               const colPosts = posts.filter(p => p.column === ci);
               return (
-                <div key={ci} style={s.column}>
+                <div key={ci} style={s.column} className="board-column">
                   {/* Sticky header */}
-                  <div style={{ ...s.colHeader, color: dayColor }}>{colName}</div>
+                  <div style={{ ...s.colHeader, color: dayColor }} className="board-col-header">{colName}</div>
                   {/* Scrollable posts */}
-                  <div style={s.colPosts}>
+                  <div style={s.colPosts} className="board-col-posts">
                     {colPosts.map((p) => {
                       const likeCount = p.likes ? Object.keys(p.likes).length : 0;
                       return (
-                        <div key={p._key} style={{
+                        <div key={p._key} className="board-post" style={{
                           ...s.stickyNote,
                           background: p.color || '#FFE0B2',
                           border: likeCount >= 3 ? '2px solid rgba(231,76,60,0.3)' : 'none',
@@ -552,7 +556,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                     )}
                   </div>
                   {/* Sticky footer: teacher input */}
-                  <div style={s.teacherInput}>
+                  <div style={s.teacherInput} className="board-teacher-input">
                     <input
                       type="text"
                       value={teacherTexts[ci] || ''}
@@ -655,13 +659,25 @@ const s = {
     overflow: 'hidden',
   },
   // Row 1: Header
-  header: {
+  headerRow1: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
     gap: 8,
     flexShrink: 0,
+  },
+  backBtn: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 20,
+    fontWeight: 700,
+    padding: '4px 10px',
+    background: 'rgba(0,0,0,0.06)',
+    border: 'none',
+    borderRadius: 10,
+    cursor: 'pointer',
+    color: '#555',
+    lineHeight: 1,
   },
   title: {
     fontFamily: "'Lilita One', cursive",
@@ -727,72 +743,56 @@ const s = {
     borderRadius: 8,
     cursor: 'pointer',
   },
-  // Row 2: Compact QR
-  qrRow: {
+  // Row 2: QR bar centered
+  qrBar: {
     display: 'flex',
-    gap: 14,
+    justifyContent: 'center',
+    flexShrink: 0,
+    padding: '4px 0',
+  },
+  qrBarCenter: {
+    display: 'flex',
     alignItems: 'center',
+    gap: 12,
     background: 'white',
     borderRadius: 14,
-    padding: '10px 16px',
+    padding: '6px 16px',
     boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    flexShrink: 0,
   },
-  qrBox: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  qrInfo: {
-    flex: 1,
+  qrBarInfo: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 4,
-    minWidth: 0,
+    gap: 1,
   },
-  qrInfoTop: {
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  qrTitle: {
-    fontFamily: "'Lilita One', cursive",
-    fontSize: 18,
-  },
-  qrCode: {
+  qrBarCode: {
     fontFamily: "'Baloo 2', cursive",
     fontSize: 16,
     color: '#333',
     letterSpacing: 2,
   },
-  qrUrl: {
+  qrBarUrl: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 12,
+    fontSize: 11,
     color: '#999',
     wordBreak: 'break-all',
+    lineHeight: 1.2,
   },
-  qrMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  qrMetaItem: {
+  qrBarMeta: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 14,
+    fontSize: 13,
     color: '#555',
     fontWeight: 600,
   },
-  qrTag: {
+  adminBtnPdf: {
     fontFamily: "'Fredoka', sans-serif",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
-    padding: '2px 8px',
+    padding: '6px 12px',
+    background: '#1976D2',
+    color: 'white',
+    border: 'none',
     borderRadius: 8,
-    border: '1.5px solid',
-    color: '#555',
-    background: 'rgba(255,255,255,0.8)',
+    cursor: 'pointer',
   },
   // Board area — fills remaining space
   boardArea: {

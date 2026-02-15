@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ref, onValue, push, set, remove } from 'firebase/database';
 import { db } from '../firebase';
+import { audioManager } from '../utils/audioManager';
 
 const PASTEL_COLORS = ['#FFE0B2', '#FFF9C4', '#C8E6C9', '#F8BBD0', '#D1C4E9', '#B3E5FC', '#FFCCBC'];
 
@@ -76,6 +77,14 @@ export default function BoardPage({ code }) {
 
   // Lightbox state
   const [lightboxSrc, setLightboxSrc] = useState(null);
+
+  // Sound state
+  const [muted, setMuted] = useState(() => audioManager.muted);
+
+  const handleSoundToggle = () => {
+    const nowMuted = audioManager.toggleMute();
+    setMuted(nowMuted);
+  };
 
   // Override global overflow:hidden on html/body/#root so the board page scrolls on mobile
   useEffect(() => {
@@ -264,6 +273,17 @@ export default function BoardPage({ code }) {
 
   return (
     <div style={s.page}>
+      {/* Sound toggle — top right */}
+      <button onClick={handleSoundToggle} style={s.soundToggle}>
+        <img
+          src={muted ? '/images/ui/button-sound-off.png' : '/images/ui/button-sound-on.png'}
+          alt={muted ? 'Ton aus' : 'Ton an'}
+          style={{ width: 28, height: 28, objectFit: 'contain' }}
+          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'inline'; }}
+        />
+        <span style={{ display: 'none', fontSize: 20 }}>{muted ? '\u{1F507}' : '\u{1F50A}'}</span>
+      </button>
+
       <h1 style={s.boardTitle}>{board.title}</h1>
       <p style={s.boardAuthor}>Du bist: <strong>{author}</strong></p>
 
@@ -719,6 +739,26 @@ const s = {
     borderRadius: 8,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+  },
+  // Sound toggle
+  soundToggle: {
+    position: 'fixed',
+    top: 12,
+    right: 12,
+    zIndex: 100,
+    width: 44,
+    height: 44,
+    background: 'rgba(255, 248, 240, 0.9)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: '1.5px solid rgba(255,166,107,0.2)',
+    borderRadius: 22,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 8px rgba(139,90,43,0.1)',
+    padding: 0,
   },
   // Lightbox
   lightboxOverlay: {

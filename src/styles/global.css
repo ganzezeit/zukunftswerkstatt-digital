@@ -59,3 +59,96 @@ button:focus-visible {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* ====== Print stylesheet for Board PDF export ====== */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 1.5cm;
+  }
+
+  /* Reset viewport constraints */
+  html, body, #root {
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  /* Show print header */
+  .board-print-header {
+    display: block !important;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+  }
+
+  /* Hide non-content elements */
+  .board-creator-container > div:first-child,  /* headerRow1 */
+  .board-creator-container > div:nth-child(3), /* qrBar */
+  .board-teacher-input,
+  .board-post button {
+    display: none !important;
+  }
+
+  /* Columns: stack vertically, full width */
+  .board-columns-area {
+    overflow: visible !important;
+    flex: none !important;
+    height: auto !important;
+  }
+
+  .board-columns-area > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .board-column {
+    max-width: 100% !important;
+    min-width: 100% !important;
+    overflow: visible !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    background: #fafafa !important;
+  }
+
+  .board-col-header {
+    font-size: 20px !important;
+    padding: 10px 16px !important;
+    background: #f0f0f0 !important;
+    border-bottom: 2px solid #ccc !important;
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  .board-col-posts {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 12px !important;
+  }
+
+  .board-post {
+    box-shadow: none !important;
+    border: 1px solid #e0e0e0 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .board-post img {
+    max-width: 400px !important;
+    max-height: 300px !important;
+    object-fit: contain !important;
+  }
+
+  /* Hide lightbox, confirm dialogs, saved board overlay */
+  [style*="position: fixed"][style*="z-index: 5000"],
+  [style*="position: fixed"][style*="z-index: 3000"],
+  [style*="position: fixed"][style*="z-index: 2500"] {
+    display: none !important;
+  }
+}
