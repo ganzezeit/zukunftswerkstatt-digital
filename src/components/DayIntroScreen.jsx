@@ -105,7 +105,7 @@ export default function DayIntroScreen({ day, onContinue }) {
               </div>
               <button onClick={handleNextStatement} style={{ ...styles.button, background: day.color }}>
                 {statementIdx < dayIntro.energizer.statements.length - 1
-                  ? 'N\u00e4chste Aussage \u2192'
+                  ? 'Nächste Aussage \u2192'
                   : 'Fertig \u2705'}
               </button>
             </div>

@@ -19,7 +19,7 @@ export default function ProjektregelnScreen({ onContinue }) {
   return (
     <div style={styles.container}>
       <h1 style={styles.heading}>
-        {'\u{1F4DC}'} Unsere Regeln f{'\u00fc'}r die Projektwoche
+        {'\u{1F4DC}'} Unsere Regeln für die Projektwoche
       </h1>
       <p style={styles.sub}>Tippe auf jede Karte, um sie umzudrehen!</p>
 

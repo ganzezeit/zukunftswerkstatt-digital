@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ref, set, push, remove, onValue, get } from 'firebase/database';
+import { ref, set, push, remove, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -181,14 +181,12 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     createdRef.current = true;
 
     const newCode = generateCode();
-    console.log('[BoardCreator] Creating board...', newCode);
-
     const boardRef = ref(db, 'boards/' + newCode);
     const timeout = setTimeout(() => {
       console.error('[BoardCreator] Timeout');
       setStatus('error');
       setErrorMsg(
-        'Verbindung fehlgeschlagen. Bitte pr\u00fcfe die Internetverbindung.' +
+        'Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.' +
         '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.'
       );
     }, TIMEOUT_MS);
@@ -201,7 +199,6 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     })
       .then(() => {
         clearTimeout(timeout);
-        console.log('[BoardCreator] Board created successfully:', newCode);
         setCode(newCode);
         setStatus('ready');
       })
@@ -224,12 +221,10 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     setErrorMsg('');
 
     const newCode = generateCode();
-    console.log('[BoardCreator] Retrying...', newCode);
-
     const boardRef = ref(db, 'boards/' + newCode);
     const timeout = setTimeout(() => {
       setStatus('error');
-      setErrorMsg('Verbindung fehlgeschlagen. Bitte pr\u00fcfe die Internetverbindung.');
+      setErrorMsg('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.');
     }, TIMEOUT_MS);
 
     set(boardRef, {
@@ -240,7 +235,6 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     })
       .then(() => {
         clearTimeout(timeout);
-        console.log('[BoardCreator] Retry successful:', newCode);
         setCode(newCode);
         setStatus('ready');
       })
@@ -255,7 +249,6 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   // Listen to posts once board is created
   useEffect(() => {
     if (!code) return;
-    console.log('[BoardCreator] Listening for posts on board:', code);
     const postsRef = ref(db, 'boards/' + code + '/posts');
     const unsub = onValue(postsRef, (snap) => {
       const data = snap.val();
@@ -277,8 +270,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   // --- Admin actions ---
   const handleCloseBoard = () => {
     setConfirm({
-      message: 'Board schlie\u00dfen? Sch\u00fcler k\u00f6nnen dann nicht mehr schreiben.',
-      confirmLabel: 'Ja, schlie\u00dfen',
+      message: 'Board schließen? Schüler können dann nicht mehr schreiben.',
+      confirmLabel: 'Ja, schließen',
       danger: false,
       action: () => {
         set(ref(db, 'boards/' + code + '/active'), false).catch((err) => {
@@ -291,8 +284,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
 
   const handleClearPosts = () => {
     setConfirm({
-      message: 'Alle Beitr\u00e4ge l\u00f6schen? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.',
-      confirmLabel: 'Ja, l\u00f6schen',
+      message: 'Alle Beiträge löschen? Das kann nicht rückgängig gemacht werden.',
+      confirmLabel: 'Ja, löschen',
       danger: true,
       action: () => {
         remove(ref(db, 'boards/' + code + '/posts')).catch((err) => {
@@ -305,8 +298,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
 
   const handleDeleteBoard = () => {
     setConfirm({
-      message: 'Board und alle Beitr\u00e4ge endg\u00fcltig l\u00f6schen?',
-      confirmLabel: 'Endg\u00fcltig l\u00f6schen',
+      message: 'Board und alle Beiträge endgültig löschen?',
+      confirmLabel: 'Endgültig löschen',
       danger: true,
       action: () => {
         remove(ref(db, 'boards/' + code)).catch((err) => {
@@ -377,8 +370,6 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
       }, {}),
       savedAt: Date.now(),
       boardCode: code,
-    }).then(() => {
-      console.log('[BoardCreator] Board saved successfully');
     }).catch((err) => {
       console.error('[BoardCreator] Error saving board:', err);
     });
@@ -387,8 +378,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   // F1: Delete saved board
   const handleDeleteSavedBoard = (boardKey) => {
     setConfirm({
-      message: 'Gespeichertes Board endg\u00fcltig l\u00f6schen?',
-      confirmLabel: 'L\u00f6schen',
+      message: 'Gespeichertes Board endgültig löschen?',
+      confirmLabel: 'Löschen',
       danger: true,
       action: () => {
         remove(ref(db, 'savedBoards/' + boardKey)).catch((err) => {
@@ -420,7 +411,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                 <button onClick={handleRetry} style={{ ...s.retryBtn, background: dayColor }}>
                   {'\u{1F504}'} Nochmal versuchen
                 </button>
-                <button onClick={onClose} style={s.adminBtnGrey}>Zur{'\u00fc'}ck</button>
+                <button onClick={onClose} style={s.adminBtnGrey}>Zurück</button>
               </div>
             </>
           )}
@@ -464,11 +455,11 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                         <div key={sb._key} style={s.savedItem}>
                           <div style={s.savedInfo}>
                             <div style={s.savedTitle}>{sb.title}</div>
-                            <div style={s.savedMeta}>{date} &middot; {postCount} Beitr{'\u00e4'}ge</div>
+                            <div style={s.savedMeta}>{date} &middot; {postCount} Beiträge</div>
                           </div>
                           <div style={{ display: 'flex', gap: 4 }}>
                             <button onClick={() => { setViewingSavedBoard(sb); setShowSavedBoards(false); }} style={s.savedBtnView}>Anzeigen</button>
-                            <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>L{'\u00f6'}schen</button>
+                            <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>Löschen</button>
                           </div>
                         </div>
                       );
@@ -483,8 +474,8 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
             <button onClick={handleSaveBoard} style={s.adminBtnGreen}>{'\u{1F4BE}'} Speichern</button>
             <button onClick={() => window.print()} style={s.adminBtnPdf}>{'\u{1F4C4}'} Als PDF</button>
             <button onClick={handleClearPosts} style={s.adminBtnOrange}>Leeren</button>
-            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
-            <button onClick={handleDeleteBoard} style={s.adminBtnRed}>L{'\u00f6'}schen</button>
+            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schließen</button>
+            <button onClick={handleDeleteBoard} style={s.adminBtnRed}>Löschen</button>
           </div>
         </div>
 
@@ -494,7 +485,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
             {title || 'Fragen-Werkstatt'} — Klassen-Board Export
           </h1>
           <p style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 14, color: '#666', margin: 0 }}>
-            {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} — {posts.length} Beitr{'\u00e4'}ge
+            {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} — {posts.length} Beiträge
           </p>
         </div>
 
@@ -505,7 +496,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
             <div style={s.qrBarInfo}>
               <span style={s.qrBarCode}>Code: <strong>{code}</strong></span>
               <span style={s.qrBarUrl}>{boardUrl}</span>
-              <span style={s.qrBarMeta}>{'\u{1F465}'} {posts.length} Beitr{'\u00e4'}ge</span>
+              <span style={s.qrBarMeta}>{'\u{1F465}'} {posts.length} Beiträge</span>
             </div>
           </div>
         </div>
@@ -534,7 +525,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                             <button
                               onClick={() => handleDeletePost(p._key)}
                               style={s.deletePostBtn}
-                              title="Beitrag l\u00f6schen"
+                              title="Beitrag löschen"
                             >{'\u2715'}</button>
                           </div>
                           {p.imageUrl && (
@@ -552,7 +543,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                       );
                     })}
                     {colPosts.length === 0 && (
-                      <div style={s.emptyCol}>Noch keine Beitr{'\u00e4'}ge</div>
+                      <div style={s.emptyCol}>Noch keine Beiträge</div>
                     )}
                   </div>
                   {/* Sticky footer: teacher input */}
@@ -595,7 +586,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
           <div style={s.savedOverlayCard}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ ...s.title, color: dayColor, margin: 0 }}>{'\u{1F4CB}'} {viewingSavedBoard.title}</h2>
-              <button onClick={() => setViewingSavedBoard(null)} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
+              <button onClick={() => setViewingSavedBoard(null)} style={s.adminBtnGrey}>Schließen</button>
             </div>
             <div style={s.savedColContainer}>
               {(viewingSavedBoard.columns || []).map((colName, ci) => {
@@ -621,7 +612,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
                         </div>
                       ))}
                       {sbPosts.length === 0 && (
-                        <div style={s.emptyCol}>Keine Beitr{'\u00e4'}ge</div>
+                        <div style={s.emptyCol}>Keine Beiträge</div>
                       )}
                     </div>
                   </div>

@@ -149,7 +149,7 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
             onClick={() => { playClickSound(); setShowBoard(true); }}
             style={{ ...styles.boardBtn, background: dayColor }}
           >
-            {'\u{1F4CB}'} Klassen-Board {'\u00f6'}ffnen
+            {'\u{1F4CB}'} Klassen-Board öffnen
           </button>
         )}
       </div>
@@ -225,15 +225,15 @@ function KahootSubStep({ sub, step, subSteps, currentSub, dayColor, onNext, onBa
         <h2 style={{ ...styles.title, color: dayColor }}>{sub.title}</h2>
         {!opened ? (
           <button onClick={handleOpen} style={{ ...styles.nextBtn, background: dayColor }}>
-            {sub.label || '\u00d6ffnen'} {'\u{1F517}'}
+            {sub.label || 'Öffnen'} {'\u{1F517}'}
           </button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             <p style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 17, color: '#6B5B4B', fontWeight: 600, animation: 'pulse 2s ease-in-out infinite' }}>
-              Kahoot l{'\u00e4'}uft...
+              Kahoot läuft...
             </p>
             <button onClick={handleReturn} style={{ ...styles.nextBtn, background: '#00C48C' }}>
-              Zur{'\u00fc'}ck zur App {'\u2705'}
+              Zurück zur App {'\u2705'}
             </button>
           </div>
         )}

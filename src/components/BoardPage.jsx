@@ -229,7 +229,7 @@ export default function BoardPage({ code }) {
         <div style={s.messageCard}>
           <div style={{ fontSize: 48 }}>{'\u{1F50D}'}</div>
           <div style={s.loadingText}>Board nicht gefunden.</div>
-          <p style={s.messageDesc}>Bitte pr{'\u00fc'}fe den Code und versuche es erneut.</p>
+          <p style={s.messageDesc}>Bitte prüfe den Code und versuche es erneut.</p>
         </div>
       </div>
     );
@@ -241,7 +241,7 @@ export default function BoardPage({ code }) {
         <div style={s.messageCard}>
           <div style={{ fontSize: 48 }}>{'\u{1F512}'}</div>
           <div style={s.loadingText}>Dieses Board wurde geschlossen.</div>
-          <p style={s.messageDesc}>Fragt eure Lehrkraft, ob ein neues Board ge{'\u00f6'}ffnet wird.</p>
+          <p style={s.messageDesc}>Fragt eure Lehrkraft, ob ein neues Board geöffnet wird.</p>
         </div>
       </div>
     );
@@ -252,7 +252,7 @@ export default function BoardPage({ code }) {
       <div style={s.page}>
         <div style={s.nameCard}>
           <h1 style={s.nameTitle}>{'\u{1F4DD}'} Willkommen!</h1>
-          <p style={s.nameDesc}>Wie hei{'\u00df'}t du oder deine Gruppe?</p>
+          <p style={s.nameDesc}>Wie heißt du oder deine Gruppe?</p>
           <form onSubmit={handleSetName} style={{ display: 'flex', gap: 10, width: '100%' }}>
             <input
               type="text"
@@ -409,7 +409,7 @@ export default function BoardPage({ code }) {
                   </div>
                 </div>
               ) : (
-                <button onClick={() => setAddingCol(ci)} style={s.addBtn}>+ Hinzuf{'\u00fc'}gen</button>
+                <button onClick={() => setAddingCol(ci)} style={s.addBtn}>+ Hinzufügen</button>
               )}
             </div>
           );

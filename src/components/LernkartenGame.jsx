@@ -75,7 +75,7 @@ export default function LernkartenGame({ onComplete }) {
           onClick={() => { playClickSound(); onComplete(); }}
           style={styles.skipBtn}
         >
-          {'\u00dc'}berspringen {'\u23ED'}
+          Überspringen {'\u23ED'}
         </button>
       )}
 

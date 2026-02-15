@@ -95,19 +95,19 @@ export default function TeacherPanel({
         <div style={styles.actions}>
           {onSkipStep && (
             <button style={styles.actionButton} onClick={() => handleButton(onSkipStep)}>
-              {'\u23ED'} Schritt {'\u00fc'}berspringen
+              {'\u23ED'} Schritt überspringen
             </button>
           )}
           {onSkipDay && (
             <button style={styles.actionButton} onClick={() => handleButton(onSkipDay)}>
-              {'\u23ED'} Tag {'\u00fc'}berspringen
+              {'\u23ED'} Tag überspringen
             </button>
           )}
           <button style={styles.actionButton} onClick={() => handleButton(onGoBack)}>
-            {'\u23EA'} Einen Schritt zur{'\u00fc'}ck
+            {'\u23EA'} Einen Schritt zurück
           </button>
           <button style={styles.actionButton} onClick={() => handleButton(onResetDay)}>
-            {'\u{1F504}'} Tag zur{'\u00fc'}cksetzen
+            {'\u{1F504}'} Tag zurücksetzen
           </button>
         </div>
 
@@ -116,7 +116,7 @@ export default function TeacherPanel({
         <div style={styles.actions}>
           {onFillEnergy && (
             <button style={{ ...styles.actionButton, ...styles.energyButton }} onClick={() => handleButton(onFillEnergy)}>
-              {'\u26A1'} Energie auf 100% f{'\u00fc'}llen
+              {'\u26A1'} Energie auf 100% füllen
             </button>
           )}
           <button style={{ ...styles.actionButton, ...styles.energyButton }} onClick={() => handleButton(onAddEnergy)}>
@@ -139,11 +139,11 @@ export default function TeacherPanel({
         </div>
 
         {/* Reset section */}
-        <div style={styles.sectionHeader}>Zur{'\u00fc'}cksetzen</div>
+        <div style={styles.sectionHeader}>Zurücksetzen</div>
         <div style={styles.actions}>
           {onResetIntro && (
             <button style={styles.actionButton} onClick={() => handleButton(onResetIntro)}>
-              {'\u{1F504}'} Intro zur{'\u00fc'}cksetzen
+              {'\u{1F504}'} Intro zurücksetzen
             </button>
           )}
           <button
@@ -151,8 +151,8 @@ export default function TeacherPanel({
             onClick={handleResetAll}
           >
             {confirmReset
-              ? '\u26A0\uFE0F Wirklich ALLES zur\u00fccksetzen?'
-              : '\u{1F5D1}\uFE0F Alles zur\u00fccksetzen'}
+              ? '\u26A0\uFE0F Wirklich ALLES zurücksetzen?'
+              : '\u{1F5D1}\uFE0F Alles zurücksetzen'}
           </button>
         </div>
 
@@ -210,7 +210,7 @@ export default function TeacherPanel({
               )}
               {onResetClass && (
                 <button style={{ ...styles.actionButton, ...styles.dangerButtonIdle }} onClick={() => handleButton(onResetClass)}>
-                  {'\u26A0\uFE0F'} Klasse zur{'\u00fc'}cksetzen
+                  {'\u26A0\uFE0F'} Klasse zurücksetzen
                 </button>
               )}
             </div>
@@ -219,7 +219,7 @@ export default function TeacherPanel({
 
         {/* Close */}
         <button style={styles.closeButton} onClick={() => handleButton(onClose)}>
-          Schlie{'\u00df'}en
+          Schließen
         </button>
       </div>
     </div>

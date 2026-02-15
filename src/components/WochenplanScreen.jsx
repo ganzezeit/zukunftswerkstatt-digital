@@ -7,7 +7,7 @@ const PLAN = [
   { tag: 'Tag 2', title: 'Austausch mit Tansania', emoji: '\u{1F30D}', color: '#00B4D8' },
   { tag: 'Tag 3', title: 'Game Design & Projektstart', emoji: '\u{1F3AE}', color: '#9B5DE5' },
   { tag: 'Tag 4', title: 'Projektarbeit', emoji: '\u{1F680}', color: '#00F5D4' },
-  { tag: 'Tag 5', title: 'Pr\u00e4sentationen & Abschluss', emoji: '\u{1F389}', color: '#FFD166' },
+  { tag: 'Tag 5', title: 'Präsentationen & Abschluss', emoji: '\u{1F389}', color: '#FFD166' },
 ];
 
 export default function WochenplanScreen({ onContinue }) {

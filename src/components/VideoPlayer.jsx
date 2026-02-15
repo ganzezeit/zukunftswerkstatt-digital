@@ -55,10 +55,10 @@ export default function VideoPlayer({ step, dayColor, onComplete }) {
       <div style={styles.container}>
         <div style={styles.errorArea}>
           <span style={{ fontSize: 56 }}>{'\u{1F3AC}'}</span>
-          <p style={styles.errorText}>Datei wird noch hinzugef{'\u00fc'}gt:</p>
+          <p style={styles.errorText}>Datei wird noch hinzugefügt:</p>
           <p style={styles.errorFile}>{content.src}</p>
           <button onClick={handleDone} style={{ ...styles.doneBtn, background: dayColor }}>
-            Zur{'\u00fc'}ck
+            Zurück
           </button>
         </div>
       </div>
@@ -88,7 +88,7 @@ export default function VideoPlayer({ step, dayColor, onComplete }) {
           <div style={styles.endedBanner}>Video beendet!</div>
         )}
         <button onClick={handleDone} style={{ ...styles.doneBtn, background: dayColor }}>
-          {ended ? 'Weiter \u2705' : 'Zur\u00fcck'}
+          {ended ? 'Weiter \u2705' : 'Zurück'}
         </button>
       </div>
     </div>

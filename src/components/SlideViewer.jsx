@@ -69,7 +69,7 @@ export default function SlideViewer({ step, dayColor, onComplete }) {
             cursor: currentPage === 1 ? 'default' : 'pointer',
           }}
         >
-          {'\u2190'} Zur{'\u00fc'}ck
+          {'\u2190'} Zurück
         </button>
 
         <span style={styles.counter}>{currentPage} / {slideCount}</span>

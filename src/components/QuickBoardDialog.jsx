@@ -197,7 +197,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
     const boardRef = ref(db, 'boards/' + newCode);
     const timeout = setTimeout(() => {
       setStatus('error');
-      setErrorMsg('Verbindung fehlgeschlagen. Bitte pr\u00fcfe die Internetverbindung.');
+      setErrorMsg('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.');
     }, TIMEOUT_MS);
 
     set(boardRef, {
@@ -259,8 +259,8 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
 
   const handleClearPosts = () => {
     setConfirm({
-      message: 'Alle Beitr\u00e4ge l\u00f6schen?',
-      confirmLabel: 'Ja, l\u00f6schen',
+      message: 'Alle Beiträge löschen?',
+      confirmLabel: 'Ja, löschen',
       danger: true,
       action: () => {
         remove(ref(db, 'boards/' + code + '/posts')).catch(console.error);
@@ -307,8 +307,8 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
 
   const handleDeleteSavedBoard = (boardKey) => {
     setConfirm({
-      message: 'Gespeichertes Board endg\u00fcltig l\u00f6schen?',
-      confirmLabel: 'L\u00f6schen',
+      message: 'Gespeichertes Board endgültig löschen?',
+      confirmLabel: 'Löschen',
       danger: true,
       action: () => {
         remove(ref(db, 'savedBoards/' + boardKey)).catch(console.error);
@@ -353,11 +353,11 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
                     <div key={sb._key} style={s.savedItem}>
                       <div style={s.savedInfo}>
                         <div style={s.savedTitle}>{sb.title}</div>
-                        <div style={s.savedMeta}>{date} &middot; {postCount} Beitr{'\u00e4'}ge</div>
+                        <div style={s.savedMeta}>{date} &middot; {postCount} Beiträge</div>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button onClick={() => { setViewingSavedBoard(sb); setMode('saved-view'); }} style={s.savedBtnView}>Anzeigen</button>
-                        <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>L{'\u00f6'}schen</button>
+                        <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>Löschen</button>
                       </div>
                     </div>
                   );
@@ -366,7 +366,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             </>
           )}
 
-          <button onClick={onClose} style={s.cancelBtn}>Schlie{'\u00df'}en</button>
+          <button onClick={onClose} style={s.cancelBtn}>Schließen</button>
         </div>
       </div>
     );
@@ -392,7 +392,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
               <button onClick={() => { setViewingSavedBoard(null); setMode('menu'); }} style={s.backBtn}>{'\u2190'}</button>
               <h2 style={{ ...s.title, color, margin: 0 }}>{'\u{1F4CB}'} {viewingSavedBoard.title}</h2>
             </div>
-            <button onClick={onClose} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
+            <button onClick={onClose} style={s.adminBtnGrey}>Schließen</button>
           </div>
 
           <div style={s.activeBoardArea}>
@@ -421,7 +421,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
                         </div>
                       ))}
                       {sbPosts.length === 0 && (
-                        <div style={s.emptyCol}>Keine Beitr{'\u00e4'}ge</div>
+                        <div style={s.emptyCol}>Keine Beiträge</div>
                       )}
                     </div>
                   </div>
@@ -494,7 +494,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             <button onClick={handleCreate} style={{ ...s.createBtn, background: color }}>
               Board erstellen
             </button>
-            <button onClick={() => setMode('menu')} style={s.cancelBtn}>Zur{'\u00fc'}ck</button>
+            <button onClick={() => setMode('menu')} style={s.cancelBtn}>Zurück</button>
           </div>
         </div>
       </div>
@@ -516,7 +516,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             <>
               <div style={{ ...s.loadingText, color: '#CC3333' }}>{'\u26A0\uFE0F'} Fehler</div>
               <div style={s.errorText}>{errorMsg}</div>
-              <button onClick={onClose} style={s.cancelBtn}>Schlie{'\u00df'}en</button>
+              <button onClick={onClose} style={s.cancelBtn}>Schließen</button>
             </>
           )}
         </div>
@@ -547,7 +547,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             <button onClick={handleSaveBoard} style={s.adminBtnGreen}>{'\u{1F4BE}'} Speichern</button>
             <button onClick={() => window.print()} style={s.adminBtnPdf}>{'\u{1F4C4}'} Als PDF</button>
             <button onClick={handleClearPosts} style={s.adminBtnOrange}>Leeren</button>
-            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schlie{'\u00df'}en</button>
+            <button onClick={handleCloseBoard} style={s.adminBtnGrey}>Schließen</button>
           </div>
         </div>
 
@@ -557,7 +557,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             {boardTitle} — Klassen-Board Export
           </h1>
           <p style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 14, color: '#666', margin: 0 }}>
-            {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} — {posts.length} Beitr{'\u00e4'}ge
+            {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} — {posts.length} Beiträge
           </p>
         </div>
 
@@ -568,7 +568,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
             <div style={s.qrBarInfo}>
               <span style={s.qrBarCode}>Code: <strong>{code}</strong></span>
               <span style={s.qrBarUrl}>{boardUrl}</span>
-              <span style={s.qrBarMeta}>{'\u{1F465}'} {posts.length} Beitr{'\u00e4'}ge</span>
+              <span style={s.qrBarMeta}>{'\u{1F465}'} {posts.length} Beiträge</span>
             </div>
           </div>
         </div>
@@ -592,7 +592,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
                         }}>
                           <div style={s.noteHeader}>
                             <div style={s.noteAuthor}>{p.author}</div>
-                            <button onClick={() => handleDeletePost(p._key)} style={s.deletePostBtn} title="L\u00f6schen">{'\u2715'}</button>
+                            <button onClick={() => handleDeletePost(p._key)} style={s.deletePostBtn} title="Löschen">{'\u2715'}</button>
                           </div>
                           {p.imageUrl && (
                             <img
@@ -609,7 +609,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
                       );
                     })}
                     {colPosts.length === 0 && (
-                      <div style={s.emptyCol}>Noch keine Beitr{'\u00e4'}ge</div>
+                      <div style={s.emptyCol}>Noch keine Beiträge</div>
                     )}
                   </div>
                   <div style={s.activeTeacherInput} className="board-teacher-input">

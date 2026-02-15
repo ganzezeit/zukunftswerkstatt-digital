@@ -23,18 +23,18 @@ export const DAYS = [
               subType: "matching-game",
               text: "Ordne die Begriffe den richtigen Beschreibungen zu!",
               pairs: [
-                { term: "Schutz", definition: "Kinder m\u00fcssen vor Gewalt und Gefahr gesch\u00fctzt werden" },
+                { term: "Schutz", definition: "Kinder müssen vor Gewalt und Gefahr geschützt werden" },
                 { term: "Bildung", definition: "Jedes Kind hat das Recht, zur Schule zu gehen und zu lernen" },
                 { term: "Gesundheit", definition: "Kinder haben das Recht auf medizinische Versorgung" },
-                { term: "Mitbestimmung", definition: "Kinder d\u00fcrfen ihre Meinung sagen und mitentscheiden" },
+                { term: "Mitbestimmung", definition: "Kinder dürfen ihre Meinung sagen und mitentscheiden" },
                 { term: "Gleichheit", definition: "Alle Kinder haben die gleichen Rechte, egal woher sie kommen" },
                 { term: "Freizeit", definition: "Kinder haben das Recht zu spielen und sich zu erholen" },
-                { term: "Privatsph\u00e4re", definition: "Kinder haben das Recht auf einen gesch\u00fctzten pers\u00f6nlichen Bereich" },
-                { term: "W\u00fcrde", definition: "Jedes Kind verdient Respekt und eine faire Behandlung" }
+                { term: "Privatsphäre", definition: "Kinder haben das Recht auf einen geschützten persönlichen Bereich" },
+                { term: "Würde", definition: "Jedes Kind verdient Respekt und eine faire Behandlung" }
               ]
             },
             {
-              title: "Kinderrechte-Pr\u00e4sentation",
+              title: "Kinderrechte-Präsentation",
               subType: "slides",
               content: {
                 slides: "tag1-rechte.pdf",
@@ -42,7 +42,7 @@ export const DAYS = [
               }
             },
             {
-              title: "Video: Kinderrechte erkl\u00e4rt",
+              title: "Video: Kinderrechte erklärt",
               subType: "video",
               content: {
                 src: "/videos/kinderrechte.mp4",
@@ -84,7 +84,7 @@ export const DAYS = [
             {
               title: "Bingo: Kinderrechte im Alltag",
               subType: "text",
-              text: "Spielt zusammen das Kinderrechte-Bingo! Findet Beispiele f\u00fcr Kinderrechte in eurem Alltag und kreuzt sie auf eurem Bingo-Feld an. Wer zuerst eine Reihe voll hat, ruft \u2018Bingo!\u2019"
+              text: "Spielt zusammen das Kinderrechte-Bingo! Findet Beispiele für Kinderrechte in eurem Alltag und kreuzt sie auf eurem Bingo-Feld an. Wer zuerst eine Reihe voll hat, ruft \u2018Bingo!\u2019"
             }
           ]
         }
@@ -98,14 +98,14 @@ export const DAYS = [
         content: {
           subSteps: [
             {
-              title: "Fotorallye: Einf\u00fchrung",
+              title: "Fotorallye: Einführung",
               subType: "text",
               text: "Bei der Fotorallye sucht ihr in der Schule und Umgebung nach Orten, die mit Kinderrechten zu tun haben. Fotografiert diese Orte mit dem Tablet!"
             },
             {
               title: "Fotorallye: Aufgaben",
               subType: "text",
-              text: "Sucht Orte, die f\u00fcr folgende Rechte stehen: Bildung, Freizeit, Schutz, Gesundheit. Macht zu jedem Recht mindestens ein Foto und \u00fcberlegt, warum dieser Ort zu dem Recht passt."
+              text: "Sucht Orte, die für folgende Rechte stehen: Bildung, Freizeit, Schutz, Gesundheit. Macht zu jedem Recht mindestens ein Foto und überlegt, warum dieser Ort zu dem Recht passt."
             },
             {
               title: "Fotorallye: Auswertung",
@@ -134,12 +134,12 @@ export const DAYS = [
             {
               title: "Lebensweltkarten: Gestalten",
               subType: "text",
-              text: "Gestaltet eure eigene Lebensweltkarte! Zeichnet eine Karte eurer Umgebung und markiert wichtige Orte: Wo spielt ihr? Wo f\u00fchlt ihr euch sicher? Wo lernt ihr? Wo trefft ihr Freunde?"
+              text: "Gestaltet eure eigene Lebensweltkarte! Zeichnet eine Karte eurer Umgebung und markiert wichtige Orte: Wo spielt ihr? Wo fühlt ihr euch sicher? Wo lernt ihr? Wo trefft ihr Freunde?"
             },
             {
-              title: "Lebensweltkarten: Pr\u00e4sentation",
+              title: "Lebensweltkarten: Präsentation",
               subType: "text",
-              text: "Stellt eure Lebensweltkarten der Klasse vor. Erkl\u00e4rt, welche Orte euch wichtig sind und warum. Vergleicht: Was haben eure Karten gemeinsam? Was ist unterschiedlich?"
+              text: "Stellt eure Lebensweltkarten der Klasse vor. Erklärt, welche Orte euch wichtig sind und warum. Vergleicht: Was haben eure Karten gemeinsam? Was ist unterschiedlich?"
             }
           ]
         }
@@ -156,7 +156,7 @@ export const DAYS = [
             {
               title: "Pausenspiel-Erfinder",
               subType: "text",
-              text: "\u26BD Euer Lieblings-Pausenspiel!\n\nDenkt an ein Spiel, das ihr in der Pause gerne spielt.\n\n\u{1F4DD} Schreibt die Regeln auf (maximal 5 Regeln).\n\u{1F3A8} Zeichnet, wie das Spiel aussieht.\n\u{1F4E6} Dieses Spiel schicken wir an die Kinder in Tansania!\n\u{1F30D} Die Kinder in Tansania machen das Gleiche \u2014 sie schicken uns ihr Lieblings-Pausenspiel zur\u00fcck.\n\u{1F4F9} Am Tag 2 tauschen wir die Spiele beim Video-Call aus!"
+              text: "\u26BD Euer Lieblings-Pausenspiel!\n\nDenkt an ein Spiel, das ihr in der Pause gerne spielt.\n\n\u{1F4DD} Schreibt die Regeln auf (maximal 5 Regeln).\n\u{1F3A8} Zeichnet, wie das Spiel aussieht.\n\u{1F4E6} Dieses Spiel schicken wir an die Kinder in Tansania!\n\u{1F30D} Die Kinder in Tansania machen das Gleiche \u2014 sie schicken uns ihr Lieblings-Pausenspiel zurück.\n\u{1F4F9} Am Tag 2 tauschen wir die Spiele beim Video-Call aus!"
             },
             {
               title: "Ausblick auf morgen",
@@ -190,7 +190,7 @@ export const DAYS = [
               title: "Fragenwerkstatt",
               subType: "text",
               boardEnabled: true,
-              text: "Sammelt gute Fragen f\u00fcr die Kinder in Tansania! Pro Gruppe 4 Fragen zu den Themen: Pause und Freizeit, Schule und Lernen, Mitbestimmung, Alltag. Regel: Fragen m\u00fcssen offen und respektvoll sein!"
+              text: "Sammelt gute Fragen für die Kinder in Tansania! Pro Gruppe 4 Fragen zu den Themen: Pause und Freizeit, Schule und Lernen, Mitbestimmung, Alltag. Regel: Fragen müssen offen und respektvoll sein!"
             },
             {
               title: "Landeskunde Tansania",
@@ -217,14 +217,14 @@ export const DAYS = [
         content: {
           subSteps: [
             {
-              title: "Pausenspiel und Rollen kl\u00e4ren",
+              title: "Pausenspiel und Rollen klären",
               subType: "text",
-              text: "Wir bereiten uns auf den Video-Call vor! Rollen: Begr\u00fc\u00dfung/Moderation, Zeitw\u00e4chter:in, Technik/Kamera, Frage-Kapit\u00e4n:in. Ablauf an die Tafel schreiben!"
+              text: "Wir bereiten uns auf den Video-Call vor! Rollen: Begrüßung/Moderation, Zeitwächter:in, Technik/Kamera, Frage-Kapitän:in. Ablauf an die Tafel schreiben!"
             },
             {
               title: "Poster-Probe und Top-Fragen",
               subType: "text",
-              text: "Jede Gruppe \u00fcbt ihre Poster-Pr\u00e4sentation (30\u201340 Sekunden). Dann w\u00e4hlen wir die Top-6 Fragen aus: 2 zu Pause, 2 zu Schule, 1 zu Mitbestimmung, 1 zu Alltag."
+              text: "Jede Gruppe übt ihre Poster-Präsentation (30\u201340 Sekunden). Dann wählen wir die Top-6 Fragen aus: 2 zu Pause, 2 zu Schule, 1 zu Mitbestimmung, 1 zu Alltag."
             }
           ]
         }
@@ -249,7 +249,7 @@ export const DAYS = [
         energyCost: 10,
         content: {
           title: "3-2-1 Feedback",
-          text: "Was haben wir wirklich gelernt? 3 Dinge, die ihr gelernt habt. 2 Gemeinsamkeiten zwischen Deutschland und Tansania. 1 \u00dcberraschung."
+          text: "Was haben wir wirklich gelernt? 3 Dinge, die ihr gelernt habt. 2 Gemeinsamkeiten zwischen Deutschland und Tansania. 1 Überraschung."
         }
       },
       {
@@ -263,12 +263,12 @@ export const DAYS = [
             {
               title: "Faktenkarten sortieren",
               subType: "text",
-              text: "Trennt eure Beobachtungen: Was haben wir geh\u00f6rt/gesehen? Was denken wir? Was wissen wir nicht? Pro Gruppe 8 Karten, je Bereich 1 Gemeinsamkeit + 1 Unterschied. Bereiche: Pause, Schule, Zuhause, Mitbestimmung."
+              text: "Trennt eure Beobachtungen: Was haben wir gehört/gesehen? Was denken wir? Was wissen wir nicht? Pro Gruppe 8 Karten, je Bereich 1 Gemeinsamkeit + 1 Unterschied. Bereiche: Pause, Schule, Zuhause, Mitbestimmung."
             },
             {
-              title: "Kinderrechte-Br\u00fcckenposter DE\u2013TZ",
+              title: "Kinderrechte-Brückenposter DE\u2013TZ",
               subType: "text",
-              text: "Jedes Team w\u00e4hlt aus den Karten: 1 Gemeinsamkeit, 1 Unterschied, 1 offene Frage + Kinderrecht-Tag. Alles auf ein gro\u00dfes Poster \u00fcbertragen! 4 Teams: Pause / Schule / Zuhause / Mitbestimmung."
+              text: "Jedes Team wählt aus den Karten: 1 Gemeinsamkeit, 1 Unterschied, 1 offene Frage + Kinderrecht-Tag. Alles auf ein großes Poster übertragen! 4 Teams: Pause / Schule / Zuhause / Mitbestimmung."
             }
           ]
         }
@@ -307,12 +307,12 @@ export const DAYS = [
             {
               title: "Pausenspiel spielen!",
               subType: "text",
-              text: "Ab nach drau\u00dfen! Wir spielen das Pausenspiel im Hof."
+              text: "Ab nach draußen! Wir spielen das Pausenspiel im Hof."
             },
             {
               title: "Feedbackrunde",
               subType: "text",
-              text: "Wie war das Spiel? Was hat euch gefallen? Wollen wir etwas \u00e4ndern? Neue Regel vorschlagen!"
+              text: "Wie war das Spiel? Was hat euch gefallen? Wollen wir etwas ändern? Neue Regel vorschlagen!"
             }
           ]
         }
@@ -325,7 +325,7 @@ export const DAYS = [
         energyCost: 15,
         content: {
           title: "Game Design Lab",
-          text: "Heute designt ihr euer eigenes Spiel! F\u00fcllt das Arbeitsblatt aus und schreibt eure eigenen Prompts."
+          text: "Heute designt ihr euer eigenes Spiel! Füllt das Arbeitsblatt aus und schreibt eure eigenen Prompts."
         }
       },
       {
@@ -377,7 +377,7 @@ export const DAYS = [
     dayIntro: {
       recap: {
         title: "Weiter geht\u2019s!",
-        text: "Heute arbeitet ihr weiter an euren Projekten. Macht sie fertig f\u00fcr die Pr\u00e4sentation morgen!"
+        text: "Heute arbeitet ihr weiter an euren Projekten. Macht sie fertig für die Präsentation morgen!"
       },
       energizer: {
         title: "Energizer vor der Projektarbeit",
@@ -394,17 +394,17 @@ export const DAYS = [
         energyCost: 15,
         content: {
           title: "Projektarbeit",
-          text: "Arbeitet weiter an euren Projekten! Macht sie fertig f\u00fcr die Pr\u00e4sentation morgen. CoSpaces-Gruppe: Projekt fertigstellen. Poster-Gruppe: Poster fertig gestalten. \u00dcbt eure Pr\u00e4sentation!"
+          text: "Arbeitet weiter an euren Projekten! Macht sie fertig für die Präsentation morgen. CoSpaces-Gruppe: Projekt fertigstellen. Poster-Gruppe: Poster fertig gestalten. Übt eure Präsentation!"
         }
       }
     ]
   },
 
-  // ===== TAG 5: Pr\u00e4sentationen und Abschluss =====
+  // ===== TAG 5: Präsentationen und Abschluss =====
   {
     id: 5,
     name: "Tag 5",
-    sub: "Pr\u00e4sentationen und Abschluss",
+    sub: "Präsentationen und Abschluss",
     emoji: "\u{1F389}",
     color: "#E74C3C",
     iconImage: "/images/day-icons/tag5-icon.png",
@@ -417,7 +417,7 @@ export const DAYS = [
         energyCost: 10,
         content: {
           title: "Letzte Projektarbeit",
-          text: "Nutzt die letzte Arbeitsphase, um eure Projekte fertigzustellen. \u00dcberpr\u00fcft alles noch einmal und bereitet euch auf die Pr\u00e4sentation vor!"
+          text: "Nutzt die letzte Arbeitsphase, um eure Projekte fertigzustellen. Überprüft alles noch einmal und bereitet euch auf die Präsentation vor!"
         }
       },
       {
@@ -445,13 +445,13 @@ export const DAYS = [
       },
       {
         id: "t5-3",
-        title: "Pr\u00e4sentationen",
+        title: "Präsentationen",
         icon: "\u{1F3A4}",
         type: "activity",
         energyCost: 15,
         content: {
           title: "Eure Ergebnisse!",
-          text: "Jede Gruppe pr\u00e4sentiert ihr Projekt! CoSpaces-Gruppe zeigt ihr digitales Projekt. Poster-Gruppe pr\u00e4sentiert ihre Poster."
+          text: "Jede Gruppe präsentiert ihr Projekt! CoSpaces-Gruppe zeigt ihr digitales Projekt. Poster-Gruppe präsentiert ihre Poster."
         }
       },
       {

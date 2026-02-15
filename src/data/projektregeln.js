@@ -8,15 +8,15 @@ export const PROJEKTREGELN = [
   },
   {
     id: 2,
-    front: "Zuh\u00f6ren",
-    back: "Wir h\u00f6ren uns gegenseitig gut zu und lassen einander ausreden.",
+    front: "Zuhören",
+    back: "Wir hören uns gegenseitig gut zu und lassen einander ausreden.",
     emoji: "\u{1F442}",
     color: "#00B4D8"
   },
   {
     id: 3,
     front: "Gemeinsam",
-    back: "Wir l\u00f6sen Probleme gemeinsam und helfen uns gegenseitig.",
+    back: "Wir lösen Probleme gemeinsam und helfen uns gegenseitig.",
     emoji: "\u{1F46B}",
     color: "#9B5DE5"
   },

@@ -89,7 +89,7 @@ export default function EnergizerScreen({ usedEnergizers, dayColor, onComplete }
       {phase === 'pick' && (
         <>
           <h1 style={styles.heading}>{'\u26A1'} Energizer-Zeit!</h1>
-          <p style={styles.sub}>W{'\u00e4'}hlt einen Energizer aus!</p>
+          <p style={styles.sub}>Wählt einen Energizer aus!</p>
           <div style={styles.options}>
             {options.map((e, i) => (
               <button

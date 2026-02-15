@@ -27,7 +27,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
         <p style={s.confirmText}>{message}</p>
         <div style={s.confirmButtons}>
           <button style={s.confirmCancel} onClick={onCancel}>Abbrechen</button>
-          <button style={s.confirmDelete} onClick={onConfirm}>L{'\u00f6'}schen</button>
+          <button style={s.confirmDelete} onClick={onConfirm}>Löschen</button>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@ export default function ClassSetupScreen({ onClassSelected }) {
         <div style={s.emoji}>{'\u{1F30D}'}</div>
         <h1 style={s.title}>Willkommen zur Projektwoche!</h1>
         <p style={s.subtitle}>
-          W{'\u00e4'}hle eine Klasse oder erstelle eine neue
+          Wähle eine Klasse oder erstelle eine neue
         </p>
 
         <div style={s.inputRow}>
@@ -137,7 +137,7 @@ export default function ClassSetupScreen({ onClassSelected }) {
                     <button
                       style={s.trashBtn}
                       onClick={() => setDeleteTarget(cls.name)}
-                      title="Klasse l\u00f6schen"
+                      title="Klasse löschen"
                     >
                       {'\u{1F5D1}\uFE0F'}
                     </button>
@@ -151,7 +151,7 @@ export default function ClassSetupScreen({ onClassSelected }) {
 
       {deleteTarget && (
         <ConfirmDialog
-          message={`Klasse "${deleteTarget}" wirklich l\u00f6schen? Alle Fortschritte gehen verloren.`}
+          message={`Klasse "${deleteTarget}" wirklich löschen? Alle Fortschritte gehen verloren.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
         />

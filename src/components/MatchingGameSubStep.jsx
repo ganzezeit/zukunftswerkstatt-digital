@@ -2,14 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { playClickSound, playSuccessSound, playWrongSound, playCompleteSound } from '../utils/audio';
 
 const DEFAULT_PAIRS = [
-  { term: "Schutz", definition: "Kinder m\u00fcssen vor Gewalt gesch\u00fctzt werden" },
+  { term: "Schutz", definition: "Kinder müssen vor Gewalt geschützt werden" },
   { term: "Bildung", definition: "Jedes Kind hat das Recht auf Schule" },
   { term: "Gesundheit", definition: "Kinder haben das Recht auf Gesundheit" },
-  { term: "Mitbestimmung", definition: "Kinder d\u00fcrfen mitbestimmen" },
+  { term: "Mitbestimmung", definition: "Kinder dürfen mitbestimmen" },
   { term: "Gleichheit", definition: "Alle Kinder sind gleich viel wert" },
-  { term: "Freizeit", definition: "Kinder d\u00fcrfen spielen und sich erholen" },
+  { term: "Freizeit", definition: "Kinder dürfen spielen und sich erholen" },
   { term: "Familie", definition: "Kinder haben das Recht auf eine Familie" },
-  { term: "Privatsph\u00e4re", definition: "Kinder haben ein Recht auf Privatsph\u00e4re" },
+  { term: "Privatsphäre", definition: "Kinder haben ein Recht auf Privatsphäre" },
 ];
 
 export default function MatchingGameSubStep({ pairs, dayColor, onComplete }) {
@@ -89,7 +89,7 @@ export default function MatchingGameSubStep({ pairs, dayColor, onComplete }) {
         onClick={() => { playClickSound(); onComplete(); }}
         style={styles.skipBtn}
       >
-        {'\u00dc'}berspringen {'\u23ED'}
+        Überspringen {'\u23ED'}
       </button>
 
       <h2 style={{ ...styles.heading, color: dayColor }}>

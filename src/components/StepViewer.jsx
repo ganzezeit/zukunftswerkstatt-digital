@@ -56,15 +56,15 @@ function ExternalLink({ step, dayColor, onComplete, type }) {
         )}
         {!opened ? (
           <button onClick={handleOpen} style={{ ...styles.openBtn, background: dayColor }}>
-            {content.label || '\u00d6ffnen'} {'\u{1F517}'}
+            {content.label || 'Öffnen'} {'\u{1F517}'}
           </button>
         ) : (
           <div style={styles.returnArea}>
             <p style={styles.waitText}>
-              {type === 'meet' ? 'Video-Call l\u00e4uft...' : 'Kahoot l\u00e4uft...'}
+              {type === 'meet' ? 'Video-Call läuft...' : 'Kahoot läuft...'}
             </p>
             <button onClick={handleReturn} style={{ ...styles.returnBtn, background: '#00C48C' }}>
-              Zur{'\u00fc'}ck zur App {'\u2705'}
+              Zurück zur App {'\u2705'}
             </button>
           </div>
         )}

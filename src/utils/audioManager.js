@@ -27,7 +27,6 @@ class AudioManager {
     this.menuTracks = await this._detectTracks('menu');
     this.energizerTracks = await this._detectTracks('energizer');
     this.initialized = true;
-    console.log('AudioManager: menu tracks:', this.menuTracks.length, 'energizer tracks:', this.energizerTracks.length);
   }
 
   async _detectTracks(prefix) {
@@ -49,10 +48,8 @@ class AudioManager {
   playMenu() {
     // Already playing menu music — don't restart
     if (this.currentType === 'menu' && this.currentAudio && !this.currentAudio.paused) {
-      console.log('AudioManager.playMenu: already playing, skip');
       return;
     }
-    console.log('AudioManager.playMenu: starting, tracks:', this.menuTracks.length, 'muted:', this.muted, 'vol:', this.volume);
     this.currentType = 'menu';
 
     if (this.menuTracks.length > 0) {
@@ -88,9 +85,7 @@ class AudioManager {
       this[indexKey] = (this[indexKey] + 1) % tracks.length;
       this._playTrack(tracks, type);
     };
-    audio.play().then(() => {
-      console.log('AudioManager._playTrack: playing', src);
-    }).catch((e) => {
+    audio.play().catch((e) => {
       console.warn('AudioManager._playTrack: play failed', src, e.message);
     });
     this.currentAudio = audio;
@@ -114,9 +109,7 @@ class AudioManager {
         audio.play().catch(() => {});
       }
     };
-    audio.play().then(() => {
-      console.log('AudioManager._playDirect: playing', src);
-    }).catch((e) => {
+    audio.play().catch((e) => {
       console.warn('AudioManager._playDirect: play BLOCKED', src, e.message);
     });
     this.currentAudio = audio;

@@ -190,7 +190,6 @@ export default function App() {
   useEffect(() => {
     let started = false;
     const startMusic = (e) => {
-      console.log('App: first interaction detected:', e.type, 'started:', started);
       if (started) return;
       started = true;
       audioManager.playMenu();

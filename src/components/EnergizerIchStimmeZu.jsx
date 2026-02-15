@@ -3,14 +3,14 @@ import { playClickSound, playSuccessSound } from '../utils/audio';
 
 const STATEMENTS = [
   "Ich bin heute topfit und ausgeschlafen",
-  "Ich habe heute gefr\u00fchst\u00fcckt.",
-  "Ich f\u00fchle mich heute sicher.",
+  "Ich habe heute gefrühstückt.",
+  "Ich fühle mich heute sicher.",
   "Ich habe jemanden, der auf mich aufpasst.",
   "Ich kann heute lernen.",
   "Ich war schonmal bei einer Demo",
-  "Ich habe schonmal etwas von Kinderrechten geh\u00f6rt",
-  "Ich habe mich schon Mal zum Klassensprecher*in w\u00e4hlen lassen",
-  "Ich kann erkl\u00e4ren, was Kinderrechte sind",
+  "Ich habe schonmal etwas von Kinderrechten gehört",
+  "Ich habe mich schon Mal zum Klassensprecher*in wählen lassen",
+  "Ich kann erklären, was Kinderrechte sind",
   "Ich freue mich auf die Projektwoche!"
 ];
 
@@ -65,7 +65,7 @@ export default function EnergizerIchStimmeZu({ onComplete }) {
           <p style={styles.hint}>Steh auf, wenn das zu dir passt!</p>
           <button onClick={handleNext} style={styles.nextButton}>
             {currentIndex < STATEMENTS.length - 1
-              ? `N\u00e4chste Aussage \u2192`
+              ? `Nächste Aussage \u2192`
               : 'Letzte Aussage \u2192'}
           </button>
         </div>
