@@ -3,6 +3,7 @@ import ActivityScreen from './ActivityScreen';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
 import MultiStepViewer from './MultiStepViewer';
+import EinzelquizStepCard from './EinzelquizStepCard';
 import GlossaryTooltip from './GlossaryTooltip';
 import { playClickSound, playSuccessSound } from '../utils/audio';
 
@@ -17,6 +18,8 @@ export default function StepViewer({ step, dayColor, onComplete, onBack }) {
       return <VideoPlayer step={step} dayColor={dayColor} onComplete={onComplete} />;
     case 'multi-step':
       return <MultiStepViewer step={step} dayColor={dayColor} onComplete={onComplete} onBack={onBack} />;
+    case 'einzelquiz':
+      return <EinzelquizStepCard step={step} dayColor={dayColor} onComplete={onComplete} />;
     case 'kahoot':
       return <ExternalLink step={step} dayColor={dayColor} onComplete={onComplete} type="kahoot" />;
     case 'meet':

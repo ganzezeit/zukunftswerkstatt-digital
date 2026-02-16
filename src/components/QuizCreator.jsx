@@ -11,7 +11,7 @@ const TYPE_CONFIG = {
   open:      { label: 'Offene Antwort',  badge: 'OA',  badgeColor: '#E67E22', icon: '\u270F\uFE0F' },
   wordcloud: { label: 'Wortwolke',       badge: 'WW',  badgeColor: '#16A085', icon: '\u2601\uFE0F' },
   sorting:   { label: 'Sortieren',       badge: 'SO',  badgeColor: '#D35400', icon: '\u{1F522}' },
-  slider:    { label: 'Sch\u00E4tzfrage', badge: 'SF', badgeColor: '#2C3E50', icon: '\u{1F4CA}' },
+  slider:    { label: 'Schätzfrage', badge: 'SF', badgeColor: '#2C3E50', icon: '\u{1F4CA}' },
 };
 
 function emptyQuestion(type) {

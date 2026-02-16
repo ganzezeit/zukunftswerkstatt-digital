@@ -2,6 +2,8 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ref, push, set, remove, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import QuizCreator from './QuizCreator';
+import EinzelquizManager from './EinzelquizManager';
+import QuizRandomizer from './QuizRandomizer';
 
 const QuizSession = lazy(() => import('./QuizSession'));
 
@@ -32,7 +34,8 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
 }
 
 export default function QuizDialog({ onClose, dayColor, className: klassenName }) {
-  const [mode, setMode] = useState('menu'); // 'menu' | 'create' | 'edit' | 'session'
+  const [tab, setTab] = useState('live'); // 'live' | 'einzel'
+  const [mode, setMode] = useState('menu'); // 'menu' | 'create' | 'edit' | 'session' | 'randomize'
   const [savedQuizzes, setSavedQuizzes] = useState([]);
   const [editingQuiz, setEditingQuiz] = useState(null); // { _key, title, questions }
   const [activeSessionCode, setActiveSessionCode] = useState(null);
@@ -157,6 +160,30 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
     );
   }
 
+  // --- RANDOMIZE MODE ---
+  if (mode === 'randomize') {
+    return (
+      <div style={s.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div style={s.formCard}>
+          <QuizRandomizer
+            mode="live"
+            dayColor={color}
+            onGenerate={(result) => {
+              push(ref(db, 'savedQuizzes'), {
+                title: result.title,
+                questions: result.questions,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              }).catch(console.error);
+              setMode('menu');
+            }}
+            onCancel={() => setMode('menu')}
+          />
+        </div>
+      </div>
+    );
+  }
+
   // --- EDIT MODE ---
   if (mode === 'edit' && editingQuiz) {
     return (
@@ -188,12 +215,48 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
       <div style={s.menuCard}>
         <h2 style={{ ...s.title, color }}>{'\u{1F3AE}'} Quiz</h2>
 
-        <button
-          onClick={() => setMode('create')}
-          style={{ ...s.menuBtn, background: color }}
-        >
-          + Neues Quiz erstellen
-        </button>
+        {/* Tab bar */}
+        <div style={s.tabBar}>
+          <button
+            onClick={() => setTab('live')}
+            style={{
+              ...s.tabBtn,
+              background: tab === 'live' ? color : 'rgba(0,0,0,0.04)',
+              color: tab === 'live' ? 'white' : '#777',
+            }}
+          >
+            Live-Quiz
+          </button>
+          <button
+            onClick={() => setTab('einzel')}
+            style={{
+              ...s.tabBtn,
+              background: tab === 'einzel' ? '#2980B9' : 'rgba(0,0,0,0.04)',
+              color: tab === 'einzel' ? 'white' : '#777',
+            }}
+          >
+            Einzelquiz
+          </button>
+        </div>
+
+        {tab === 'einzel' ? (
+          <EinzelquizManager dayColor={color} />
+        ) : (
+        <>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setMode('create')}
+            style={{ ...s.menuBtn, background: color, flex: 1 }}
+          >
+            + Neues Quiz
+          </button>
+          <button
+            onClick={() => setMode('randomize')}
+            style={{ ...s.menuBtn, background: '#8E44AD', flex: 1 }}
+          >
+            {'\u{1F3B2}'} Zufallsquiz
+          </button>
+        </div>
 
         {savedQuizzes.length > 0 && (
           <>
@@ -235,6 +298,9 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
               })}
             </div>
           </>
+        )}
+
+        </>
         )}
 
         <button onClick={onClose} style={s.cancelBtn}>Schließen</button>
@@ -295,6 +361,25 @@ const s = {
     fontFamily: "'Lilita One', cursive",
     fontSize: 24,
     margin: 0,
+  },
+  tabBar: {
+    display: 'flex',
+    gap: 6,
+    background: 'rgba(0,0,0,0.03)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  tabBtn: {
+    flex: 1,
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 15,
+    fontWeight: 700,
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: 10,
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'background 0.2s ease',
   },
   menuBtn: {
     fontFamily: "'Lilita One', cursive",

@@ -3,6 +3,7 @@ import GlossaryTooltip from './GlossaryTooltip';
 import LandeskundeViewer from './LandeskundeViewer';
 import MatchingGameSubStep from './MatchingGameSubStep';
 import BoardCreator from './BoardCreator';
+import EinzelquizStepCard from './EinzelquizStepCard';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
 import { playClickSound, playSuccessSound } from '../utils/audio';
@@ -28,6 +29,15 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
   // Sub-type: landeskunde — fullscreen, no wrapper needed
   if (sub && sub.subType === 'landeskunde') {
     return <LandeskundeViewer mode="landeskunde" dayColor={dayColor} onComplete={handleNext} />;
+  }
+
+  // Sub-type: einzelquiz — fullscreen QR card
+  if (sub && sub.subType === 'einzelquiz') {
+    const quizStep = {
+      title: sub.title,
+      content: { quizType: sub.quizType || 'vortest' },
+    };
+    return <EinzelquizStepCard step={quizStep} dayColor={dayColor} onComplete={handleNext} />;
   }
 
   // Sub-type: slides — fullscreen, no wrapper needed

@@ -7,6 +7,7 @@ import './styles/animations.css';
 const App = lazy(() => import('./components/App'));
 const BoardPage = lazy(() => import('./components/BoardPage'));
 const QuizPage = lazy(() => import('./components/QuizPage'));
+const EinzelquizPage = lazy(() => import('./components/EinzelquizPage'));
 
 // Minimal loading spinner for Suspense
 function LoadingFallback() {
@@ -39,6 +40,14 @@ function Root() {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <BoardPage code={boardMatch[1].toUpperCase()} />
+      </Suspense>
+    );
+  }
+  const einzelquizMatch = path.match(/^\/einzelquiz\/([A-Za-z0-9_-]+)/);
+  if (einzelquizMatch) {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <EinzelquizPage quizId={einzelquizMatch[1]} />
       </Suspense>
     );
   }

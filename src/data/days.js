@@ -19,19 +19,10 @@ export const DAYS = [
         content: {
           subSteps: [
             {
-              title: "Zuordnungsspiel: Kinderrechte",
-              subType: "matching-game",
-              text: "Ordne die Begriffe den richtigen Beschreibungen zu!",
-              pairs: [
-                { term: "Schutz", definition: "Kinder müssen vor Gewalt und Gefahr geschützt werden" },
-                { term: "Bildung", definition: "Jedes Kind hat das Recht, zur Schule zu gehen und zu lernen" },
-                { term: "Gesundheit", definition: "Kinder haben das Recht auf medizinische Versorgung" },
-                { term: "Mitbestimmung", definition: "Kinder dürfen ihre Meinung sagen und mitentscheiden" },
-                { term: "Gleichheit", definition: "Alle Kinder haben die gleichen Rechte, egal woher sie kommen" },
-                { term: "Freizeit", definition: "Kinder haben das Recht zu spielen und sich zu erholen" },
-                { term: "Privatsphäre", definition: "Kinder haben das Recht auf einen geschützten persönlichen Bereich" },
-                { term: "Würde", definition: "Jedes Kind verdient Respekt und eine faire Behandlung" }
-              ]
+              title: "Vortest: Was wisst ihr schon?",
+              subType: "einzelquiz",
+              quizType: "vortest",
+              text: "Beantwortet die Fragen alleine auf eurem Handy. Das ist kein Test \u2014 wir wollen nur wissen, was ihr schon wisst!"
             },
             {
               title: "Kinderrechte-Präsentation",
@@ -463,6 +454,17 @@ export const DAYS = [
         content: {
           title: "Abschluss der Projektwoche!",
           text: "Was nehmt ihr mit aus dieser Woche? Was hat euch am besten gefallen?"
+        }
+      },
+      {
+        id: "t5-5",
+        title: "Nachtest: Was habt ihr gelernt?",
+        icon: "\u{1F4DD}",
+        type: "einzelquiz",
+        energyCost: 5,
+        content: {
+          quizType: "nachtest",
+          description: "Beantwortet die gleichen Fragen noch einmal \u2014 mal sehen, wie viel ihr gelernt habt!"
         }
       }
     ]
