@@ -6,6 +6,7 @@ import './styles/animations.css';
 // Code-split: BoardPage only loads on /board/:code route
 const App = lazy(() => import('./components/App'));
 const BoardPage = lazy(() => import('./components/BoardPage'));
+const ChatPage = lazy(() => import('./components/ChatPage'));
 const QuizPage = lazy(() => import('./components/QuizPage'));
 const EinzelquizPage = lazy(() => import('./components/EinzelquizPage'));
 
@@ -40,6 +41,14 @@ function Root() {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <BoardPage code={boardMatch[1].toUpperCase()} />
+      </Suspense>
+    );
+  }
+  const chatMatch = path.match(/^\/chat\/([A-Za-z0-9]+)/);
+  if (chatMatch) {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <ChatPage roomCode={chatMatch[1].toUpperCase()} />
       </Suspense>
     );
   }

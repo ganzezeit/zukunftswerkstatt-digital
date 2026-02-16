@@ -25,6 +25,7 @@ const EnergizerScreen = lazy(() => import('./EnergizerScreen'));
 const TeacherPanel = lazy(() => import('./TeacherPanel'));
 const QuickBoardDialog = lazy(() => import('./QuickBoardDialog'));
 const QuizDialog = lazy(() => import('./QuizDialog'));
+const ChatManager = lazy(() => import('./ChatManager'));
 const WeeklyReport = lazy(() => import('./WeeklyReport'));
 const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 
@@ -48,6 +49,7 @@ export default function App() {
   const [energyFloat, setEnergyFloat] = useState(null);
   const [showQuickBoard, setShowQuickBoard] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [showWeeklyReport, setShowWeeklyReport] = useState(false);
   const [showEnergizerPopup, setShowEnergizerPopup] = useState(false);
   const [freeEnergizer, setFreeEnergizer] = useState(false);
@@ -595,6 +597,7 @@ export default function App() {
         isIntro={isIntroScreen}
         onOpenBoard={!isIntroScreen ? () => setShowQuickBoard(true) : undefined}
         onOpenQuiz={!isIntroScreen ? () => setShowQuiz(true) : undefined}
+        onOpenChat={!isIntroScreen ? () => setShowChat(true) : undefined}
         onLightningClick={!isIntroScreen ? handleLightningClick : undefined}
         className={className}
         saveStatus={className ? saveStatus : null}
@@ -707,6 +710,15 @@ export default function App() {
             onClose={() => setShowQuiz(false)}
             dayColor={dayData?.color || '#FF6B35'}
             className={className}
+          />
+        </Suspense>
+      )}
+
+      {showChat && (
+        <Suspense fallback={null}>
+          <ChatManager
+            onClose={() => setShowChat(false)}
+            dayColor={dayData?.color || '#FF6B35'}
           />
         </Suspense>
       )}

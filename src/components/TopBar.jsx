@@ -142,7 +142,7 @@ function SaveIndicator({ status }) {
   );
 }
 
-export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, onOpenQuiz, onLightningClick, className: klassenName, saveStatus }) {
+export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, onOpenQuiz, onOpenChat, onLightningClick, className: klassenName, saveStatus }) {
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
   const [muted, setMuted] = useState(false);
@@ -256,6 +256,15 @@ export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId,
             size={30}
             onClick={onOpenQuiz}
             title="Quiz"
+          />
+        )}
+        {onOpenChat && (
+          <PngButton
+            src="/images/ui/button-chat.png"
+            alt={'\u{1F4AC}'}
+            size={30}
+            onClick={onOpenChat}
+            title="Chat"
           />
         )}
         <EnergyBar energy={energy} onLightningClick={onLightningClick} />
