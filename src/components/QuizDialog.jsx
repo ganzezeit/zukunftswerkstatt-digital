@@ -202,7 +202,7 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
 
   // --- MENU MODE ---
   return (
-    <div style={s.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="quiz-dialog-overlay" style={s.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       {confirm && (
         <ConfirmDialog
           message={confirm.message}
@@ -212,11 +212,11 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
           onCancel={() => setConfirm(null)}
         />
       )}
-      <div style={s.menuCard}>
-        <h2 style={{ ...s.title, color }}>{'\u{1F3AE}'} Quiz</h2>
+      <div className="quiz-dialog-content" style={s.menuCard}>
+        <h2 style={{ ...s.title, color }} className="no-print">{'\u{1F3AE}'} Quiz</h2>
 
         {/* Tab bar */}
-        <div style={s.tabBar}>
+        <div style={s.tabBar} className="no-print">
           <button
             onClick={() => setTab('live')}
             style={{
@@ -303,7 +303,7 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
         </>
         )}
 
-        <button onClick={onClose} style={s.cancelBtn}>Schließen</button>
+        <button onClick={onClose} style={s.cancelBtn} className="no-print">Schließen</button>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import GlossaryTooltip from './GlossaryTooltip';
 import LandeskundeViewer from './LandeskundeViewer';
 import MatchingGameSubStep from './MatchingGameSubStep';
 import BoardCreator from './BoardCreator';
+import MissionBoardButton from './MissionBoardButton';
 import EinzelquizStepCard from './EinzelquizStepCard';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
@@ -162,6 +163,10 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
             {'\u{1F4CB}'} Klassen-Board öffnen
           </button>
         )}
+
+        {sub.boardConfig && (
+          <MissionBoardButton {...sub.boardConfig} dayColor={dayColor} />
+        )}
       </div>
 
       {showBoard && (
@@ -169,6 +174,7 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
           title={sub.title || 'Klassen-Board'}
           dayColor={dayColor}
           onClose={() => setShowBoard(false)}
+          taskId={sub.taskId}
         />
       )}
 

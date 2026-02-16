@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GlossaryTooltip from './GlossaryTooltip';
+import MissionBoardButton from './MissionBoardButton';
 import { playClickSound, playSuccessSound } from '../utils/audio';
 
 export default function ActivityScreen({ step, dayColor, onComplete }) {
@@ -82,6 +83,10 @@ export default function ActivityScreen({ step, dayColor, onComplete }) {
           ))}
         </div>
 
+        {content.boardConfig && (
+          <MissionBoardButton {...content.boardConfig} dayColor={dayColor} />
+        )}
+
         <button onClick={handleComplete} style={{ ...styles.doneBtn, background: dayColor }}>
           Fertig {'\u2705'}
         </button>
@@ -125,6 +130,10 @@ export default function ActivityScreen({ step, dayColor, onComplete }) {
           style={styles.image}
           onError={e => { e.target.style.display = 'none'; }}
         />
+      )}
+
+      {content.boardConfig && (
+        <MissionBoardButton {...content.boardConfig} dayColor={dayColor} />
       )}
 
       {/* Count-up elapsed timer */}

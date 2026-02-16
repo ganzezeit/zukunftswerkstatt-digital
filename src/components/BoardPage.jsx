@@ -272,6 +272,7 @@ export default function BoardPage({ code }) {
   const columns = board.columns || [];
 
   return (
+    <>
     <div style={s.page}>
       {/* Sound toggle — top right */}
       <button onClick={handleSoundToggle} style={s.soundToggle}>
@@ -416,8 +417,9 @@ export default function BoardPage({ code }) {
         })}
       </div>
 
-      {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
     </div>
+    {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+    </>
   );
 }
 

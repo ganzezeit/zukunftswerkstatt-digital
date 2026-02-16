@@ -142,7 +142,7 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
   );
 }
 
-export default function BoardCreator({ title, columns, dayColor, onClose }) {
+export default function BoardCreator({ title, columns, dayColor, onClose, existingCode, taskId }) {
   const [code, setCode] = useState(null);
   const [posts, setPosts] = useState([]);
   const [status, setStatus] = useState('creating');
@@ -175,43 +175,89 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     setLightboxIndex(idx >= 0 ? idx : 0);
   }, [allPhotos]);
 
+  // Helper: create a new board and optionally register in boardLinks
+  const createNewBoard = useCallback((onSuccess, onError) => {
+    const newCode = generateCode();
+    const boardRef = ref(db, 'boards/' + newCode);
+    const timeout = setTimeout(() => {
+      console.error('[BoardCreator] Timeout');
+      onError('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.' +
+        '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.');
+    }, TIMEOUT_MS);
+
+    const boardData = {
+      title: title || 'Fragen-Werkstatt',
+      columns: cols,
+      active: true,
+      createdAt: Date.now(),
+    };
+    if (taskId) boardData.taskId = taskId;
+
+    set(boardRef, boardData)
+      .then(() => {
+        clearTimeout(timeout);
+        // Register in boardLinks if taskId provided
+        if (taskId) {
+          set(ref(db, 'boardLinks/' + taskId), newCode).catch((err) => {
+            console.error('[BoardCreator] Failed to write boardLink:', err);
+          });
+        }
+        onSuccess(newCode);
+      })
+      .catch((err) => {
+        clearTimeout(timeout);
+        console.error('[BoardCreator] Firebase write failed:', err.message || err);
+        onError(`Board konnte nicht erstellt werden: ${err.message || 'Unbekannter Fehler'}` +
+          '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.');
+      });
+
+    return timeout;
+  }, [title, cols, taskId]);
+
   // Create board on mount
   useEffect(() => {
     if (createdRef.current) return;
     createdRef.current = true;
 
-    const newCode = generateCode();
-    const boardRef = ref(db, 'boards/' + newCode);
-    const timeout = setTimeout(() => {
-      console.error('[BoardCreator] Timeout');
-      setStatus('error');
-      setErrorMsg(
-        'Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.' +
-        '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.'
-      );
-    }, TIMEOUT_MS);
+    // If existingCode provided, skip creation entirely
+    if (existingCode) {
+      setCode(existingCode);
+      setStatus('ready');
+      return;
+    }
 
-    set(boardRef, {
-      title: title || 'Fragen-Werkstatt',
-      columns: cols,
-      active: true,
-      createdAt: Date.now(),
-    })
-      .then(() => {
-        clearTimeout(timeout);
-        setCode(newCode);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        clearTimeout(timeout);
-        console.error('[BoardCreator] Firebase write failed:', err.message || err);
+    // If taskId provided, check boardLinks first
+    if (taskId) {
+      const linkRef = ref(db, 'boardLinks/' + taskId);
+      const timeout = setTimeout(() => {
         setStatus('error');
-        setErrorMsg(
-          `Board konnte nicht erstellt werden: ${err.message || 'Unbekannter Fehler'}` +
-          '\n\nFalls der Fehler bestehen bleibt: Bitte in der Firebase Console unter Realtime Database \u2192 Rules die Lese- und Schreibrechte aktivieren.'
-        );
-      });
+        setErrorMsg('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.');
+      }, TIMEOUT_MS);
 
+      onValue(linkRef, (snap) => {
+        clearTimeout(timeout);
+        const linkedCode = snap.val();
+        if (linkedCode) {
+          setCode(linkedCode);
+          setStatus('ready');
+        } else {
+          // No existing board for this taskId — create new
+          const t = createNewBoard(
+            (newCode) => { setCode(newCode); setStatus('ready'); },
+            (msg) => { setStatus('error'); setErrorMsg(msg); }
+          );
+          return () => clearTimeout(t);
+        }
+      }, { onlyOnce: true });
+
+      return () => clearTimeout(timeout);
+    }
+
+    // Default: create new board (no taskId, no existingCode)
+    const timeout = createNewBoard(
+      (newCode) => { setCode(newCode); setStatus('ready'); },
+      (msg) => { setStatus('error'); setErrorMsg(msg); }
+    );
     return () => clearTimeout(timeout);
   }, []);
 
@@ -220,30 +266,10 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
     setStatus('creating');
     setErrorMsg('');
 
-    const newCode = generateCode();
-    const boardRef = ref(db, 'boards/' + newCode);
-    const timeout = setTimeout(() => {
-      setStatus('error');
-      setErrorMsg('Verbindung fehlgeschlagen. Bitte prüfe die Internetverbindung.');
-    }, TIMEOUT_MS);
-
-    set(boardRef, {
-      title: title || 'Fragen-Werkstatt',
-      columns: cols,
-      active: true,
-      createdAt: Date.now(),
-    })
-      .then(() => {
-        clearTimeout(timeout);
-        setCode(newCode);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        clearTimeout(timeout);
-        console.error('[BoardCreator] Retry failed:', err.message || err);
-        setStatus('error');
-        setErrorMsg(`Board konnte nicht erstellt werden: ${err.message || 'Unbekannter Fehler'}`);
-      });
+    createNewBoard(
+      (newCode) => { setCode(newCode); setStatus('ready'); },
+      (msg) => { setStatus('error'); setErrorMsg(msg); }
+    );
   };
 
   // Listen to posts once board is created
@@ -305,6 +331,11 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
         remove(ref(db, 'boards/' + code)).catch((err) => {
           console.error('[BoardCreator] Error deleting board:', err);
         });
+        if (taskId) {
+          remove(ref(db, 'boardLinks/' + taskId)).catch((err) => {
+            console.error('[BoardCreator] Error removing boardLink:', err);
+          });
+        }
         onClose();
       },
     });
@@ -421,6 +452,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
   }
 
   return (
+    <>
     <div style={s.overlay} className="board-overlay">
       {confirm && (
         <ConfirmDialog
@@ -570,59 +602,60 @@ export default function BoardCreator({ title, columns, dayColor, onClose }) {
           </div>
         </div>
       </div>
+    </div>
 
-      {/* Photo lightbox with navigation */}
-      {lightboxIndex !== null && allPhotos.length > 0 && (
-        <PhotoLightbox
-          photos={allPhotos}
-          initialIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-        />
-      )}
+    {/* Photo lightbox with navigation — rendered outside overlay to avoid overflow:hidden clipping */}
+    {lightboxIndex !== null && allPhotos.length > 0 && (
+      <PhotoLightbox
+        photos={allPhotos}
+        initialIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+      />
+    )}
 
-      {/* F1: Read-only saved board overlay */}
-      {viewingSavedBoard && (
-        <div style={s.savedOverlay}>
-          <div style={s.savedOverlayCard}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ ...s.title, color: dayColor, margin: 0 }}>{'\u{1F4CB}'} {viewingSavedBoard.title}</h2>
-              <button onClick={() => setViewingSavedBoard(null)} style={s.adminBtnGrey}>Schließen</button>
-            </div>
-            <div style={s.savedColContainer}>
-              {(viewingSavedBoard.columns || []).map((colName, ci) => {
-                const sbPosts = viewingSavedBoard.posts
-                  ? Object.entries(viewingSavedBoard.posts)
-                      .filter(([, p]) => p.column === ci)
-                      .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0))
-                  : [];
-                return (
-                  <div key={ci} style={s.savedColumn}>
-                    <div style={{ ...s.colHeader, color: dayColor }}>{colName}</div>
-                    <div style={s.colPosts}>
-                      {sbPosts.map(([key, p]) => (
-                        <div key={key} style={{ ...s.stickyNote, background: p.color || '#FFE0B2' }}>
-                          <div style={s.noteAuthor}>{p.author}</div>
-                          {p.imageUrl && (
-                            <img
-                              src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
-                              style={s.noteImage}
-                            />
-                          )}
-                          {p.text && <div style={s.noteText}>{p.text}</div>}
-                        </div>
-                      ))}
-                      {sbPosts.length === 0 && (
-                        <div style={s.emptyCol}>Keine Beiträge</div>
-                      )}
-                    </div>
+    {/* F1: Read-only saved board overlay */}
+    {viewingSavedBoard && (
+      <div style={s.savedOverlay}>
+        <div style={s.savedOverlayCard}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ ...s.title, color: dayColor, margin: 0 }}>{'\u{1F4CB}'} {viewingSavedBoard.title}</h2>
+            <button onClick={() => setViewingSavedBoard(null)} style={s.adminBtnGrey}>Schließen</button>
+          </div>
+          <div style={s.savedColContainer}>
+            {(viewingSavedBoard.columns || []).map((colName, ci) => {
+              const sbPosts = viewingSavedBoard.posts
+                ? Object.entries(viewingSavedBoard.posts)
+                    .filter(([, p]) => p.column === ci)
+                    .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0))
+                : [];
+              return (
+                <div key={ci} style={s.savedColumn}>
+                  <div style={{ ...s.colHeader, color: dayColor }}>{colName}</div>
+                  <div style={s.colPosts}>
+                    {sbPosts.map(([key, p]) => (
+                      <div key={key} style={{ ...s.stickyNote, background: p.color || '#FFE0B2' }}>
+                        <div style={s.noteAuthor}>{p.author}</div>
+                        {p.imageUrl && (
+                          <img
+                            src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
+                            style={s.noteImage}
+                          />
+                        )}
+                        {p.text && <div style={s.noteText}>{p.text}</div>}
+                      </div>
+                    ))}
+                    {sbPosts.length === 0 && (
+                      <div style={s.emptyCol}>Keine Beiträge</div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   );
 }
 

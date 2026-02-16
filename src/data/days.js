@@ -181,6 +181,7 @@ export const DAYS = [
               title: "Fragenwerkstatt",
               subType: "text",
               boardEnabled: true,
+              taskId: "t2-1-fragen",
               text: "Sammelt gute Fragen für die Kinder in Tansania! Pro Gruppe 4 Fragen zu den Themen: Pause und Freizeit, Schule und Lernen, Mitbestimmung, Alltag. Regel: Fragen müssen offen und respektvoll sein!"
             },
             {
@@ -215,7 +216,8 @@ export const DAYS = [
             {
               title: "Poster-Probe und Top-Fragen",
               subType: "text",
-              text: "Jede Gruppe übt ihre Poster-Präsentation (30\u201340 Sekunden). Dann wählen wir die Top-6 Fragen aus: 2 zu Pause, 2 zu Schule, 1 zu Mitbestimmung, 1 zu Alltag."
+              text: "Jede Gruppe übt ihre Poster-Präsentation (30\u201340 Sekunden). Dann wählen wir die Top-6 Fragen aus: 2 zu Pause, 2 zu Schule, 1 zu Mitbestimmung, 1 zu Alltag.",
+              boardConfig: { referenceTaskId: "t2-1-fragen", buttonLabel: "\u{1F4CB} Fragen-Board \u00F6ffnen" }
             }
           ]
         }
@@ -340,7 +342,8 @@ export const DAYS = [
               icon: "\u{1F3A8}",
               task: "Gestaltet ein buntes Poster!"
             }
-          ]
+          ],
+          boardConfig: { taskId: "t3-3-gruppen", title: "Gruppen-Board", columns: ["Poster-Crew \u{1F3A8}", "CoSpaces-Team \u{1F30D}"], buttonLabel: "\u{1F4CB} Gruppen-Board \u00F6ffnen" }
         }
       },
       {
@@ -453,7 +456,8 @@ export const DAYS = [
         energyCost: 10,
         content: {
           title: "Abschluss der Projektwoche!",
-          text: "Was nehmt ihr mit aus dieser Woche? Was hat euch am besten gefallen?"
+          text: "Was nehmt ihr mit aus dieser Woche? Was hat euch am besten gefallen?",
+          boardConfig: { taskId: "t5-4-feedback", title: "3-2-1 Feedback", columns: ["3 Dinge die gut waren", "2 Dinge die ich gelernt habe", "1 Wunsch f\u00FCr die Zukunft"], buttonLabel: "\u{1F4CB} Feedback-Board \u00F6ffnen" }
         }
       },
       {

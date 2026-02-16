@@ -76,7 +76,7 @@ export default function EinzelquizComparison({ vortestId, nachtestId, vortestQui
   return (
     <div style={s.container}>
       <div style={s.header}>
-        <button onClick={onClose} style={s.backBtn}>{'\u2190'}</button>
+        <button onClick={onClose} style={s.backBtn} className="no-print">{'\u2190'}</button>
         <h2 style={{ ...s.title, color }}>{'\u{1F4CA}'} Vortest vs Nachtest</h2>
       </div>
 

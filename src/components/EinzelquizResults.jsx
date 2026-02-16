@@ -54,7 +54,7 @@ export default function EinzelquizResults({ quizId, quiz, dayColor, onClose }) {
   return (
     <div style={s.container}>
       <div style={s.header}>
-        <button onClick={onClose} style={s.backBtn}>{'\u2190'}</button>
+        <button onClick={onClose} style={s.backBtn} className="no-print">{'\u2190'}</button>
         <h2 style={{ ...s.title, color }}>{'\u{1F4CA}'} Ergebnisse: {quiz?.title}</h2>
       </div>
 
@@ -85,7 +85,7 @@ export default function EinzelquizResults({ quizId, quiz, dayColor, onClose }) {
           </div>
 
           {/* Sort buttons */}
-          <div style={s.sortRow}>
+          <div style={s.sortRow} className="no-print">
             {[
               { key: 'score', label: 'Nach Ergebnis' },
               { key: 'name', label: 'Nach Name' },

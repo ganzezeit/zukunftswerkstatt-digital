@@ -190,6 +190,29 @@ button:focus-visible {
   .quiz-analysis-content { overflow: visible !important; max-height: none !important; }
 }
 
+/* ====== Print stylesheet for Quiz Dialog (Einzelquiz Results/Comparison) ====== */
+@media print {
+  .quiz-dialog-overlay {
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .quiz-dialog-overlay .no-print { display: none !important; }
+  .quiz-dialog-content {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    box-shadow: none !important;
+    padding: 20px !important;
+  }
+}
+
 /* ====== Print stylesheet for Weekly Report ====== */
 @media print {
   .weekly-report-overlay {
