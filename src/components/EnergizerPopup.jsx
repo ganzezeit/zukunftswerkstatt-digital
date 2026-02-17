@@ -26,7 +26,7 @@ export default function EnergizerPopup({ onSelect, onClose }) {
         <button onClick={onClose} style={styles.closeBtn}>{'\u2715'}</button>
 
         <h2 style={styles.title}>{'\u26A1'} Energizer-Pause!</h2>
-        <p style={styles.subtitle}>W\u00e4hle einen Energizer:</p>
+        <p style={styles.subtitle}>Wähle einen Energizer:</p>
 
         <div style={styles.cards}>
           {options.map((e, i) => (

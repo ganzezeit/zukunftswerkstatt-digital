@@ -526,7 +526,7 @@ export default function ChatPage({ roomCode }) {
           ) : videoFailed ? (
             <div style={s.videoOverlay}>
               <div style={{ fontSize: 32 }}>{'\u26A0\uFE0F'}</div>
-              <div style={s.videoLoadText}>Video nicht verf\u00FCgbar. Bitte nutze den Chat.</div>
+              <div style={s.videoLoadText}>Video nicht verfügbar. Bitte nutze den Chat.</div>
             </div>
           ) : null}
         </div>

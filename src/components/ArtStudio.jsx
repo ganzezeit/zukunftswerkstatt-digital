@@ -21,7 +21,7 @@ const DEVICE_LANG = (() => {
 const UI = {
   de: {
     title: 'KI-Kunststudio',
-    placeholder: 'Was m\u00F6chtest du erstellen? Beschreibe dein Bild...',
+    placeholder: 'Was möchtest du erstellen? Beschreibe dein Bild...',
     generate: 'Bild erstellen!',
     loading: 'KI erstellt dein Bild...',
     save: 'Speichern',
@@ -29,11 +29,11 @@ const UI = {
     unsafe: 'Dieser Text ist nicht erlaubt. Bitte versuche etwas anderes! \u{1F648}',
     error: 'Etwas ist schiefgelaufen. Bitte versuche es nochmal.',
     gallery: 'Deine Bilder',
-    close: 'Schlie\u00DFen',
+    close: 'Schließen',
     chars: 'Zeichen',
     createRoom: 'Raum erstellen',
-    closeRoom: 'Raum schlie\u00DFen',
-    studentGallery: 'Sch\u00FCler-Galerie',
+    closeRoom: 'Raum schließen',
+    studentGallery: 'Schüler-Galerie',
     noImages: 'Noch keine Bilder',
     pause: 'Pausieren',
     resume: 'Fortsetzen',
@@ -60,21 +60,21 @@ const UI = {
     by: 'by',
   },
   tr: {
-    title: 'Yapay Zeka Sanat St\u00FCdyosu',
-    placeholder: 'Ne olu\u015Fturmak istiyorsun? Resmini a\u00E7\u0131kla...',
-    generate: 'Resim Olu\u015Ftur!',
-    loading: 'Yapay zeka resminizi olu\u015Fturuyor...',
+    title: 'Yapay Zeka Sanat Stüdyosu',
+    placeholder: 'Ne oluşturmak istiyorsun? Resmini açıkla...',
+    generate: 'Resim Oluştur!',
+    loading: 'Yapay zeka resminizi oluşturuyor...',
     save: 'Kaydet',
     retry: 'Tekrar Dene',
-    unsafe: 'Bu metin izin verilmiyor. L\u00FCtfen ba\u015Fka bir \u015Fey deneyin! \u{1F648}',
-    error: 'Bir \u015Feyler ters gitti. L\u00FCtfen tekrar deneyin.',
+    unsafe: 'Bu metin izin verilmiyor. Lütfen başka bir şey deneyin! \u{1F648}',
+    error: 'Bir şeyler ters gitti. Lütfen tekrar deneyin.',
     gallery: 'Resimlerin',
     close: 'Kapat',
     chars: 'karakter',
-    createRoom: 'Oda Olu\u015Ftur',
-    closeRoom: 'Oday\u0131 Kapat',
-    studentGallery: '\u00D6\u011Frenci Galerisi',
-    noImages: 'Hen\u00FCz resim yok',
+    createRoom: 'Oda Oluştur',
+    closeRoom: 'Odayı Kapat',
+    studentGallery: 'Öğrenci Galerisi',
+    noImages: 'Henüz resim yok',
     pause: 'Duraklat',
     resume: 'Devam Et',
     by: '\u2013',
@@ -101,19 +101,19 @@ const UI = {
   },
   fr: {
     title: 'Studio d\'Art IA',
-    placeholder: 'Que voulez-vous cr\u00E9er ? D\u00E9crivez votre image...',
-    generate: 'Cr\u00E9er l\'image !',
-    loading: 'L\'IA cr\u00E9e votre image...',
+    placeholder: 'Que voulez-vous créer ? Décrivez votre image...',
+    generate: 'Créer l\'image !',
+    loading: 'L\'IA crée votre image...',
     save: 'Enregistrer',
-    retry: 'R\u00E9essayer',
-    unsafe: 'Ce texte n\'est pas autoris\u00E9. Essayez autre chose ! \u{1F648}',
-    error: 'Quelque chose s\'est mal pass\u00E9. Veuillez r\u00E9essayer.',
+    retry: 'Réessayer',
+    unsafe: 'Ce texte n\'est pas autorisé. Essayez autre chose ! \u{1F648}',
+    error: 'Quelque chose s\'est mal passé. Veuillez réessayer.',
     gallery: 'Vos Images',
     close: 'Fermer',
-    chars: 'caract\u00E8res',
-    createRoom: 'Cr\u00E9er une Salle',
+    chars: 'caractères',
+    createRoom: 'Créer une Salle',
     closeRoom: 'Fermer la Salle',
-    studentGallery: 'Galerie des \u00E9l\u00E8ves',
+    studentGallery: 'Galerie des élèves',
     noImages: 'Pas encore d\'images',
     pause: 'Pause',
     resume: 'Reprendre',
@@ -129,7 +129,7 @@ const STYLES = [
   { id: 'pixel', label: 'Pixel Art', emoji: '\u{1F47E}', color: '#D1C4E9' },
   { id: '3d', label: '3D', emoji: '\u{1F9CA}', color: '#B2EBF2' },
   { id: 'anime', label: 'Anime', emoji: '\u{1F338}', color: '#F3E5F5' },
-  { id: 'oil', label: '\u00D6lgem\u00E4lde', emoji: '\u{1F5BC}\uFE0F', color: '#FFF9C4' },
+  { id: 'oil', label: 'Ölgemälde', emoji: '\u{1F5BC}\uFE0F', color: '#FFF9C4' },
   { id: 'comic', label: 'Comic', emoji: '\u{1F4A5}', color: '#FFCCBC' },
   { id: 'sketch', label: 'Skizze', emoji: '\u270F\uFE0F', color: '#E0E0E0' },
 ];
@@ -627,11 +627,11 @@ export default function ArtStudio({ onClose, initialMode }) {
                 {/* Right: Studios */}
                 <div style={st.rmRightCol}>
                   <div style={st.rmColHead}>
-                    <span style={st.rmColTitle}>Kunst-R\u00E4ume</span>
+                    <span style={st.rmColTitle}>Kunst-Räume</span>
                     <button onClick={handleCreateStudio} style={st.rmAddBtn}>+ Neuer Raum</button>
                   </div>
                   <div style={st.rmRoomsList}>
-                    {studios.length === 0 && <p style={st.rmEmpty}>Noch keine R\u00E4ume erstellt</p>}
+                    {studios.length === 0 && <p style={st.rmEmpty}>Noch keine Räume erstellt</p>}
                     {studios.map(studio => (
                       <div
                         key={studio.id}
@@ -654,7 +654,7 @@ export default function ArtStudio({ onClose, initialMode }) {
                             {studioMenuOpen === studio.id && (
                               <div style={st.rmMenu} onClick={e => e.stopPropagation()}>
                                 <button onClick={() => handleDeleteStudio(studio.id)} style={{ ...st.rmMenuItem, color: '#FF6B6B' }}>
-                                  {'\u{1F5D1}\uFE0F'} Raum l\u00F6schen
+                                  {'\u{1F5D1}\uFE0F'} Raum löschen
                                 </button>
                               </div>
                             )}
@@ -719,7 +719,7 @@ export default function ArtStudio({ onClose, initialMode }) {
                     <img src={img.imageUrl} alt={img.prompt} style={st.studentGalImg} onClick={() => setPreviewImg(img)} />
                     <div style={st.studentGalMeta}>
                       <span style={st.studentGalAuthor}>{img.author}</span>
-                      <button onClick={() => handleDeleteImage(img.id)} style={st.deleteImgBtn} title="L\u00F6schen">{'\u{1F5D1}\uFE0F'}</button>
+                      <button onClick={() => handleDeleteImage(img.id)} style={st.deleteImgBtn} title="Löschen">{'\u{1F5D1}\uFE0F'}</button>
                     </div>
                   </div>
                 ))}
@@ -802,7 +802,7 @@ export default function ArtStudio({ onClose, initialMode }) {
                     boxShadow: selectedModel === 'quality' ? '0 0 12px rgba(167,139,250,0.3)' : 'none',
                   }}
                 >
-                  <span>{'\u2728 Qualit\u00E4t'}</span>
+                  <span>{'\u2728 Qualität'}</span>
                   <span style={st.modelHint}>~5 Sek.</span>
                 </button>
               </div>

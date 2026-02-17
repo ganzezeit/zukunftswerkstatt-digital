@@ -7,7 +7,7 @@ const STYLE_PROMPTS = {
   'Pixel Art': 'pixel art style with crisp pixels, limited color palette, retro 16-bit aesthetic, clean pixel placement',
   '3D': '3D rendered style with smooth surfaces, realistic materials, volumetric lighting, Pixar-quality rendering',
   'Anime': 'anime/manga style with large expressive eyes, dynamic poses, vibrant colors, Japanese animation aesthetic',
-  '\u00D6lgem\u00E4lde': 'oil painting style with rich textures, layered brushstrokes, classical composition, museum-quality fine art',
+  'Ölgemälde': 'oil painting style with rich textures, layered brushstrokes, classical composition, museum-quality fine art',
   'Comic': 'comic book style with bold ink lines, halftone dots, dynamic panels, superhero comic aesthetic',
   'Skizze': 'pencil sketch style with detailed linework, cross-hatching, artistic shading, hand-drawn quality',
 };
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
           max_tokens: 100,
           messages: [{
             role: 'user',
-            content: 'You are a content safety filter for a children\'s educational art app (ages 11-15) at a German primary school.\n\nIMPORTANT: Prompts will usually be in GERMAN. Common German words are NOT inappropriate:\n- "Kinder" = children, "Menschen" = people, "Bild" = picture/image\n- "M\u00E4dchen" = girl, "Junge" = boy, "Frau" = woman, "Mann" = man\n- "Stadt" = city, "Haus" = house, "Wald" = forest\n- These are normal, innocent words. Do NOT flag them.\n\nOnly flag content that is genuinely harmful: explicit violence/gore, weapons used to harm, drugs, sexual/pornographic content, horror/extreme fear, hate speech, or content promoting discrimination.\n\nALLOW: People (children, adults, families), animals, nature, cities, countries, cultures, flags, food, buildings, art, abstract designs, fantasy creatures, educational content, historical topics, landscapes, portraits.\n\nReply ONLY "SAFE" or "UNSAFE: reason".\n\nPrompt: "' + prompt + '"'
+            content: 'You are a content safety filter for a children\'s educational art app (ages 11-15) at a German primary school.\n\nIMPORTANT: Prompts will usually be in GERMAN. Common German words are NOT inappropriate:\n- "Kinder" = children, "Menschen" = people, "Bild" = picture/image\n- "Mädchen" = girl, "Junge" = boy, "Frau" = woman, "Mann" = man\n- "Stadt" = city, "Haus" = house, "Wald" = forest\n- These are normal, innocent words. Do NOT flag them.\n\nOnly flag content that is genuinely harmful: explicit violence/gore, weapons used to harm, drugs, sexual/pornographic content, horror/extreme fear, hate speech, or content promoting discrimination.\n\nALLOW: People (children, adults, families), animals, nature, cities, countries, cultures, flags, food, buildings, art, abstract designs, fantasy creatures, educational content, historical topics, landscapes, portraits.\n\nReply ONLY "SAFE" or "UNSAFE: reason".\n\nPrompt: "' + prompt + '"'
           }]
         })
       }),

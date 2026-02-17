@@ -34,7 +34,7 @@ export default function MissionBoardButton({ taskId, referenceTaskId, title, col
   return (
     <>
       <button onClick={handleClick} style={{ ...styles.button, background: dayColor || '#FF6B35' }}>
-        {buttonLabel || '\u{1F4CB} Board \u00F6ffnen'}
+        {buttonLabel || '\u{1F4CB} Board öffnen'}
       </button>
 
       {toast && (

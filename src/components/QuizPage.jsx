@@ -201,7 +201,7 @@ export default function QuizPage({ code }) {
         <div style={s.messageCard}>
           <div style={{ fontSize: 48 }}>{'\u{1F50D}'}</div>
           <div style={s.loadingText}>Quiz nicht gefunden.</div>
-          <p style={s.messageDesc}>Bitte pr\u00FCfe den Code und versuche es erneut.</p>
+          <p style={s.messageDesc}>Bitte prüfe den Code und versuche es erneut.</p>
         </div>
       </div>
     );
@@ -214,7 +214,7 @@ export default function QuizPage({ code }) {
         <div style={s.nameCard}>
           <h1 style={s.nameTitle}>{'\u{1F3AE}'} Quiz beitreten</h1>
           <p style={s.nameDesc}>{session.quizTitle}</p>
-          <p style={s.namePrompt}>Wie hei\u00DFt du?</p>
+          <p style={s.namePrompt}>Wie heißt du?</p>
           <form onSubmit={handleSetName} style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
             <input
               type="text"
@@ -314,7 +314,7 @@ export default function QuizPage({ code }) {
             ) : (
               <div style={s.wcDone}>
                 <div style={s.sentIcon}>{'\u2713'}</div>
-                <p style={s.wcDoneText}>Alle W\u00F6rter gesendet!</p>
+                <p style={s.wcDoneText}>Alle Wörter gesendet!</p>
               </div>
             )}
 
@@ -452,7 +452,7 @@ export default function QuizPage({ code }) {
               <div style={{ display: 'flex', gap: 10 }}>
                 {sortingOrder.length > 0 && (
                   <button onClick={() => setSortingOrder([])} style={s.sortingResetBtn}>
-                    Zur\u00FCcksetzen
+                    Zurücksetzen
                   </button>
                 )}
                 {sortingOrder.length === items.length && (
@@ -743,7 +743,7 @@ export default function QuizPage({ code }) {
             {studentValue !== null && (
               <p style={s.correctAnswer}>Deine Antwort: {studentValue}{q.unit ? ` ${q.unit}` : ''}</p>
             )}
-            <p style={s.correctAnswer}>Richtig: {q.correctValue}{q.unit ? ` ${q.unit}` : ''} (\u00B1{q.tolerance})</p>
+            <p style={s.correctAnswer}>Richtig: {q.correctValue}{q.unit ? ` ${q.unit}` : ''} (±{q.tolerance})</p>
             {pointsThisRound > 0 && <div style={s.pointsDisplay}>+{pointsThisRound} Punkte</div>}
             <div style={s.totalScore}>Gesamt: {myScore} Punkte</div>
           </div>
@@ -841,7 +841,7 @@ export default function QuizPage({ code }) {
             {myRank <= 3 ? medals[myRank - 1] : ''} Platz {myRank}
           </div>
           <div style={s.finalScoreBig}>{myScore} Punkte</div>
-          <p style={s.finalThanks}>Danke f\u00FCrs Mitmachen!</p>
+          <p style={s.finalThanks}>Danke fürs Mitmachen!</p>
         </div>
       </div>
     );

@@ -344,7 +344,7 @@ export default function QuizSession({ quiz, sessionCode, onEnd, dayColor, classN
 
   const handleEnd = useCallback(() => {
     setConfirm({
-      message: 'Quiz beenden und Session l\u00F6schen?',
+      message: 'Quiz beenden und Session löschen?',
       confirmLabel: 'Beenden',
       danger: true,
       onConfirm: () => {
@@ -432,7 +432,7 @@ export default function QuizSession({ quiz, sessionCode, onEnd, dayColor, classN
           <div style={s.questionContainer}>
             <div style={s.qHeader}>
               <span style={s.qNumber}>Frage {currentQ + 1}/{totalQ}</span>
-              <span style={s.answerCounter}>{wordCloudEntries.length} W\u00F6rter von {uniqueAuthors} Spielern</span>
+              <span style={s.answerCounter}>{wordCloudEntries.length} Wörter von {uniqueAuthors} Spielern</span>
             </div>
 
             <div style={s.qTextBox}>
@@ -722,7 +722,7 @@ export default function QuizSession({ quiz, sessionCode, onEnd, dayColor, classN
                 {q.correctValue}{q.unit ? ` ${q.unit}` : ''}
               </div>
               <div style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 14, fontWeight: 600, color: '#2E7D32', textAlign: 'center' }}>
-                Toleranz: \u00B1{q.tolerance}{q.unit ? ` ${q.unit}` : ''}
+                Toleranz: ±{q.tolerance}{q.unit ? ` ${q.unit}` : ''}
               </div>
             </div>
 
@@ -745,7 +745,7 @@ export default function QuizSession({ quiz, sessionCode, onEnd, dayColor, classN
                       {a.value}{q.unit ? ` ${q.unit}` : ''}
                     </span>
                     <span style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 12, fontWeight: 500, color: '#999' }}>
-                      (\u00B1{a.distance})
+                      (±{a.distance})
                     </span>
                   </div>
                 );
@@ -876,7 +876,7 @@ export default function QuizSession({ quiz, sessionCode, onEnd, dayColor, classN
             onClick={nextOrFinal}
             style={{ ...s.nextBtn, background: color }}
           >
-            {currentQ + 1 >= totalQ ? 'Endergebnis' : 'N\u00E4chste Frage'}
+            {currentQ + 1 >= totalQ ? 'Endergebnis' : 'Nächste Frage'}
           </button>
           <button onClick={handleEnd} style={s.endBtn}>Quiz beenden</button>
         </div>

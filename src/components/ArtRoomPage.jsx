@@ -16,7 +16,7 @@ const UI = {
     joinTitle: 'KI-Kunststudio beitreten',
     nameLabel: 'Dein Name:',
     join: 'Beitreten',
-    placeholder: 'Was m\u00F6chtest du erstellen? Beschreibe dein Bild...',
+    placeholder: 'Was möchtest du erstellen? Beschreibe dein Bild...',
     generate: 'Bild erstellen!',
     loading: 'KI erstellt dein Bild...',
     unsafe: 'Dieser Text ist nicht erlaubt. Bitte versuche etwas anderes!',
@@ -42,17 +42,17 @@ const UI = {
     by: 'by',
   },
   tr: {
-    title: 'Yapay Zeka Sanat St\u00FCdyosu',
-    joinTitle: 'Yapay Zeka Sanat St\u00FCdyosuna Kat\u0131l',
-    nameLabel: 'Ad\u0131n:',
-    join: 'Kat\u0131l',
-    placeholder: 'Ne olu\u015Fturmak istiyorsun? Resmini a\u00E7\u0131kla...',
-    generate: 'Resim Olu\u015Ftur!',
-    loading: 'Yapay zeka resminizi olu\u015Fturuyor...',
-    unsafe: 'Bu metin izin verilmiyor. L\u00FCtfen ba\u015Fka bir \u015Fey deneyin!',
+    title: 'Yapay Zeka Sanat Stüdyosu',
+    joinTitle: 'Yapay Zeka Sanat Stüdyosuna Katıl',
+    nameLabel: 'Adın:',
+    join: 'Katıl',
+    placeholder: 'Ne oluşturmak istiyorsun? Resmini açıkla...',
+    generate: 'Resim Oluştur!',
+    loading: 'Yapay zeka resminizi oluşturuyor...',
+    unsafe: 'Bu metin izin verilmiyor. Lütfen başka bir şey deneyin!',
     gallery: 'Galeri',
-    closed: 'Bu oda mevcut de\u011Fil veya kapal\u0131.',
-    paused: 'Resim olu\u015Fturma \u015Fu anda duraklat\u0131ld\u0131.',
+    closed: 'Bu oda mevcut değil veya kapalı.',
+    paused: 'Resim oluşturma şu anda duraklatıldı.',
     chars: 'karakter',
     by: '\u2013',
   },
@@ -76,14 +76,14 @@ const UI = {
     joinTitle: 'Rejoindre le Studio d\'Art IA',
     nameLabel: 'Ton nom :',
     join: 'Rejoindre',
-    placeholder: 'Que voulez-vous cr\u00E9er ? D\u00E9crivez votre image...',
-    generate: 'Cr\u00E9er l\'image !',
-    loading: 'L\'IA cr\u00E9e votre image...',
-    unsafe: 'Ce texte n\'est pas autoris\u00E9. Essayez autre chose !',
+    placeholder: 'Que voulez-vous créer ? Décrivez votre image...',
+    generate: 'Créer l\'image !',
+    loading: 'L\'IA crée votre image...',
+    unsafe: 'Ce texte n\'est pas autorisé. Essayez autre chose !',
     gallery: 'Galerie',
-    closed: 'Cette salle n\'existe pas ou est ferm\u00E9e.',
-    paused: 'La g\u00E9n\u00E9ration d\'images est actuellement en pause.',
-    chars: 'caract\u00E8res',
+    closed: 'Cette salle n\'existe pas ou est fermée.',
+    paused: 'La génération d\'images est actuellement en pause.',
+    chars: 'caractères',
     by: 'par',
   },
 };
@@ -96,7 +96,7 @@ const STYLES = [
   { id: 'pixel', label: 'Pixel Art', emoji: '\u{1F47E}', color: '#D1C4E9' },
   { id: '3d', label: '3D', emoji: '\u{1F9CA}', color: '#B2EBF2' },
   { id: 'anime', label: 'Anime', emoji: '\u{1F338}', color: '#F3E5F5' },
-  { id: 'oil', label: '\u00D6lgem\u00E4lde', emoji: '\u{1F5BC}\uFE0F', color: '#FFF9C4' },
+  { id: 'oil', label: 'Ölgemälde', emoji: '\u{1F5BC}\uFE0F', color: '#FFF9C4' },
   { id: 'comic', label: 'Comic', emoji: '\u{1F4A5}', color: '#FFCCBC' },
   { id: 'sketch', label: 'Skizze', emoji: '\u270F\uFE0F', color: '#E0E0E0' },
 ];
@@ -487,7 +487,7 @@ export default function ArtRoomPage({ code }) {
                       boxShadow: selectedModel === 'quality' ? '0 0 12px rgba(167,139,250,0.3)' : 'none',
                     }}
                   >
-                    <span>{'\u2728 Qualit\u00E4t'}</span>
+                    <span>{'\u2728 Qualität'}</span>
                     <span style={st.modelHint}>~5 Sek.</span>
                   </button>
                 )}

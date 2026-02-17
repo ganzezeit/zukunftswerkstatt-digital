@@ -350,7 +350,7 @@ function QuestionAnalysis({ question: q, questionIndex: qIdx, answers, wordCloud
                 {q.correctValue}{q.unit ? ` ${q.unit}` : ''}
               </div>
               <div style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 13, fontWeight: 600, color: '#2E7D32' }}>
-                Toleranz: \u00B1{q.tolerance}{q.unit ? ` ${q.unit}` : ''}
+                Toleranz: ±{q.tolerance}{q.unit ? ` ${q.unit}` : ''}
               </div>
             </div>
             <div style={s.answerList}>
@@ -363,7 +363,7 @@ function QuestionAnalysis({ question: q, questionIndex: qIdx, answers, wordCloud
                     <span style={{ fontFamily: "'Baloo 2', cursive", fontSize: 16, fontWeight: 700, color: inTol ? '#2E7D32' : '#C62828' }}>
                       {a.value}{q.unit ? ` ${q.unit}` : ''}
                     </span>
-                    <span style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 11, color: '#999' }}>(\u00B1{a.distance})</span>
+                    <span style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 11, color: '#999' }}>(±{a.distance})</span>
                   </div>
                 );
               })}

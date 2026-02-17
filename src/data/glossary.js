@@ -113,7 +113,7 @@ export const GLOSSARY = [
   { term: "Partnerschule", definition: "Eine Schule in einem anderen Land, mit der man zusammenarbeitet und sich austauscht.", category: "Schulsprache" },
   { term: "Video-Call", definition: "Ein Gespräch über das Internet mit Bild und Ton — so kann man mit Menschen auf der ganzen Welt sprechen.", category: "Schulsprache" },
   { term: "Faktenkarte", definition: "Eine Karte mit einer Frage auf der Vorderseite und der Antwort auf der Rückseite — zum Lernen und Spielen.", category: "Schulsprache" },
-  { term: "Prompt", definition: "Ein Prompt ist eine Anweisung oder ein Befehl, den du an eine KI (K\u00FCnstliche Intelligenz) gibst. Je genauer dein Prompt ist, desto besser kann die KI dir helfen. Zum Beispiel: 'Male ein Bild von einem Haus am Meer' ist ein Prompt f\u00FCr eine Bild-KI.", category: "Schulsprache" },
+  { term: "Prompt", definition: "Ein Prompt ist eine Anweisung oder ein Befehl, den du an eine KI (Künstliche Intelligenz) gibst. Je genauer dein Prompt ist, desto besser kann die KI dir helfen. Zum Beispiel: 'Male ein Bild von einem Haus am Meer' ist ein Prompt für eine Bild-KI.", category: "Schulsprache" },
 
   // ===== PROJEKTWOCHE-SPEZIFISCH (25 terms) =====
   { term: "Auswertung", definition: "Ihr schaut euch an, was ihr gemacht habt, und überlegt: Was haben wir gelernt? Was war gut?", category: "Schule / Projekt" },

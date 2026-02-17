@@ -103,7 +103,7 @@ export default function QuizCreator({ quiz, onSave, onCancel, dayColor }) {
     if (editDraft.type === 'slider') {
       if (editDraft.min >= editDraft.max) { setError('Min muss kleiner als Max sein.'); return; }
       if (editDraft.correctValue < editDraft.min || editDraft.correctValue > editDraft.max) { setError('Richtige Antwort muss zwischen Min und Max liegen.'); return; }
-      if (editDraft.tolerance <= 0) { setError('Toleranz muss gr\u00F6\u00DFer als 0 sein.'); return; }
+      if (editDraft.tolerance <= 0) { setError('Toleranz muss größer als 0 sein.'); return; }
     }
     const updated = [...questions];
     updated[editingIndex] = editDraft;
