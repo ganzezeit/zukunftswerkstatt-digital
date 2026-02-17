@@ -224,6 +224,19 @@ export default function EinzelquizPage({ quizId }) {
   // --- ALREADY SUBMITTED ---
   if (phase === 'already-done' && alreadySubmitted) {
     const r = alreadySubmitted;
+    const isAssessment = quiz?.quizType === 'vortest' || quiz?.quizType === 'nachtest';
+    if (isAssessment) {
+      return (
+        <div style={s.page}>
+          <div style={s.resultCard}>
+            <div style={{ fontSize: 56 }}>{'\u2705'}</div>
+            <h2 style={{ ...s.resultTitle, color: '#27AE60' }}>Bereits abgegeben!</h2>
+            <p style={s.resultName}>{r.name}</p>
+            <p style={s.resultDetail}>Deine Antworten wurden gespeichert.</p>
+          </div>
+        </div>
+      );
+    }
     const pct = r.score;
     const color = pct >= 70 ? '#27AE60' : pct >= 40 ? '#E67E22' : '#E74C3C';
     return (
@@ -363,7 +376,7 @@ export default function EinzelquizPage({ quizId }) {
               disabled={currentQ === 0}
               style={{ ...s.navBtn, opacity: currentQ === 0 ? 0.3 : 1 }}
             >
-              \u2190 Zurück
+              {'\u2190 Zur\u00fcck'}
             </button>
             <button
               onClick={handleNext}
@@ -373,7 +386,7 @@ export default function EinzelquizPage({ quizId }) {
                 opacity: (!hasAnswer && q.type !== 'slider') ? 0.4 : 1,
               }}
             >
-              {currentQ === questions.length - 1 ? 'Übersicht \u2192' : 'Weiter \u2192'}
+              {currentQ === questions.length - 1 ? '\u00dcbersicht \u2192' : 'Weiter \u2192'}
             </button>
           </div>
         </div>
@@ -424,7 +437,7 @@ export default function EinzelquizPage({ quizId }) {
             Abgeben {'\u2705'}
           </button>
           <button onClick={() => { setCurrentQ(0); setPhase('quiz'); }} style={s.backToQuizBtn}>
-            Zurück zu den Fragen
+            {'Zur\u00fcck zu den Fragen'}
           </button>
         </div>
       </div>
@@ -445,6 +458,21 @@ export default function EinzelquizPage({ quizId }) {
 
   // --- RESULTS ---
   if (phase === 'results' && result) {
+    const isAssessment = quiz?.quizType === 'vortest' || quiz?.quizType === 'nachtest';
+    if (isAssessment) {
+      return (
+        <div style={s.page}>
+          <div style={s.resultCard}>
+            <div style={{ fontSize: 56 }}>{'\u{1F4E8}'}</div>
+            <h2 style={{ ...s.resultTitle, color: '#27AE60' }}>Danke!</h2>
+            <p style={s.resultDetail}>Deine Antworten wurden gespeichert.</p>
+            <p style={{ ...s.resultDetail, fontSize: 15, color: '#999' }}>
+              {'Du kannst das Fenster jetzt schlie\u00dfen.'}
+            </p>
+          </div>
+        </div>
+      );
+    }
     const pct = result.score;
     const color = pct >= 70 ? '#27AE60' : pct >= 40 ? '#E67E22' : '#E74C3C';
     return (

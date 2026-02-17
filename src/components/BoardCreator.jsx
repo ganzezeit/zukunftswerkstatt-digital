@@ -406,6 +406,18 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
     });
   };
 
+  // F1: Reopen saved board for editing
+  const handleEditSavedBoard = (savedBoard) => {
+    if (savedBoard.boardCode) {
+      setCode(savedBoard.boardCode);
+      setStatus('ready');
+      // Reactivate the board in case it was closed
+      set(ref(db, 'boards/' + savedBoard.boardCode + '/active'), true).catch(() => {});
+    }
+    setShowSavedBoards(false);
+    setViewingSavedBoard(null);
+  };
+
   // F1: Delete saved board
   const handleDeleteSavedBoard = (boardKey) => {
     setConfirm({
@@ -490,8 +502,11 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
                             <div style={s.savedMeta}>{date} &middot; {postCount} Beiträge</div>
                           </div>
                           <div style={{ display: 'flex', gap: 4 }}>
+                            {sb.boardCode && (
+                              <button onClick={() => handleEditSavedBoard(sb)} style={s.savedBtnEdit}>Bearbeiten</button>
+                            )}
                             <button onClick={() => { setViewingSavedBoard(sb); setShowSavedBoards(false); }} style={s.savedBtnView}>Anzeigen</button>
-                            <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>Löschen</button>
+                            <button onClick={() => handleDeleteSavedBoard(sb._key)} style={s.savedBtnDelete}>L\u00f6schen</button>
                           </div>
                         </div>
                       );
@@ -1007,6 +1022,18 @@ const s = {
     fontSize: 11,
     color: '#999',
     fontWeight: 500,
+  },
+  savedBtnEdit: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '4px 10px',
+    background: '#E8F5E9',
+    color: '#2E7D32',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   savedBtnView: {
     fontFamily: "'Fredoka', sans-serif",

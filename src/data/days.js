@@ -19,10 +19,9 @@ export const DAYS = [
         content: {
           subSteps: [
             {
-              title: "Vortest: Was wisst ihr schon?",
-              subType: "einzelquiz",
-              quizType: "vortest",
-              text: "Beantwortet die Fragen alleine auf eurem Handy. Das ist kein Test \u2014 wir wollen nur wissen, was ihr schon wisst!"
+              title: "Lernkarten: Wichtige Begriffe",
+              subType: "lernkarten",
+              text: "Lernt die wichtigsten Begriffe der Projektwoche kennen!"
             },
             {
               title: "Kinderrechte-Präsentation",
@@ -101,7 +100,8 @@ export const DAYS = [
             {
               title: "Fotorallye: Auswertung",
               subType: "text",
-              text: "Schaut euch gemeinsam eure Fotos an. Besprecht: Welche Orte habt ihr gefunden? Warum passen sie zu den Kinderrechten? Gibt es Orte, die zu mehreren Rechten passen?"
+              text: "Schaut euch gemeinsam eure Fotos an. Besprecht: Welche Orte habt ihr gefunden? Warum passen sie zu den Kinderrechten? Gibt es Orte, die zu mehreren Rechten passen?",
+              boardConfig: { taskId: "t1-4-auswertung", title: "Fotorallye-Board", columns: ["Bildung \u{1F4DA}", "Freizeit \u26BD", "Schutz \u{1F6E1}\uFE0F", "Gesundheit \u{1F3E5}"], buttonLabel: "\u{1F4CB} Klassen-Board öffnen" }
             }
           ]
         }
@@ -119,18 +119,25 @@ export const DAYS = [
               subType: "slides",
               content: {
                 slides: "tag1-lebenswelt.pdf",
-                slideCount: 7
+                slideCount: 4
               }
+            },
+            {
+              title: "Ergebnisse",
+              subType: "text",
+              text: "Fotografiert und ladet eure Zeichnungen mit eurem Namen hier hoch!",
+              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", columns: ["Eure Zeichnungen \u{1F3A8}"], buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
             },
             {
               title: "Lebensweltkarten: Gestalten",
               subType: "text",
-              text: "Gestaltet eure eigene Lebensweltkarte! Zeichnet eine Karte eurer Umgebung und markiert wichtige Orte: Wo spielt ihr? Wo fühlt ihr euch sicher? Wo lernt ihr? Wo trefft ihr Freunde?"
+              text: "Gestaltet eure eigene Lebensweltkarte! Zeichnet eine Karte eurer Umgebung und markiert wichtige Orte: Wo spielt ihr? Wo f\u00fchlt ihr euch sicher? Wo lernt ihr? Wo trefft ihr Freunde?"
             },
             {
               title: "Lebensweltkarten: Präsentation",
               subType: "text",
-              text: "Stellt eure Lebensweltkarten der Klasse vor. Erklärt, welche Orte euch wichtig sind und warum. Vergleicht: Was haben eure Karten gemeinsam? Was ist unterschiedlich?"
+              text: "Stellt eure Lebensweltkarten der Klasse vor. Erkl\u00e4rt, welche Orte euch wichtig sind und warum. Vergleicht: Was haben eure Karten gemeinsam? Was ist unterschiedlich?",
+              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", columns: ["Eure Zeichnungen \u{1F3A8}"], buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
             }
           ]
         }

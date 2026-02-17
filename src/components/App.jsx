@@ -18,6 +18,7 @@ const WochenplanScreen = lazy(() => import('./WochenplanScreen'));
 const ProjektregelnScreen = lazy(() => import('./ProjektregelnScreen'));
 const EnergizerIchStimmeZu = lazy(() => import('./EnergizerIchStimmeZu'));
 const LernkartenGame = lazy(() => import('./LernkartenGame'));
+const EinzelquizStepCard = lazy(() => import('./EinzelquizStepCard'));
 const DayScreen = lazy(() => import('./DayScreen'));
 const DayIntroScreen = lazy(() => import('./DayIntroScreen'));
 const StepViewer = lazy(() => import('./StepViewer'));
@@ -628,7 +629,13 @@ export default function App() {
           {screen === 'wochenplan' && <WochenplanScreen onContinue={handleWochenplanDone} />}
           {screen === 'projektregeln' && <ProjektregelnScreen onContinue={handleProjektregelnDone} />}
           {screen === 'ichStimmeZu' && <EnergizerIchStimmeZu onComplete={handleIchStimmeZuDone} />}
-          {screen === 'lernkarten' && <LernkartenGame onComplete={handleLernkartenDone} />}
+          {screen === 'lernkarten' && (
+            <EinzelquizStepCard
+              step={{ title: 'Vortest: Was wisst ihr schon?', content: { quizType: 'vortest' } }}
+              dayColor="#FF6B35"
+              onComplete={handleLernkartenDone}
+            />
+          )}
 
           {screen === 'dayIntro' && dayData && (
             <DayIntroScreen day={dayData} onContinue={handleDayIntroDone} />

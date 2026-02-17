@@ -5,6 +5,7 @@ import MatchingGameSubStep from './MatchingGameSubStep';
 import BoardCreator from './BoardCreator';
 import MissionBoardButton from './MissionBoardButton';
 import EinzelquizStepCard from './EinzelquizStepCard';
+import LernkartenGame from './LernkartenGame';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
 import { playClickSound, playSuccessSound } from '../utils/audio';
@@ -30,6 +31,11 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
   // Sub-type: landeskunde — fullscreen, no wrapper needed
   if (sub && sub.subType === 'landeskunde') {
     return <LandeskundeViewer mode="landeskunde" dayColor={dayColor} onComplete={handleNext} />;
+  }
+
+  // Sub-type: lernkarten — fullscreen memory card game
+  if (sub && sub.subType === 'lernkarten') {
+    return <LernkartenGame onComplete={handleNext} />;
   }
 
   // Sub-type: einzelquiz — fullscreen QR card
