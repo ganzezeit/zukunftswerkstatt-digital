@@ -142,7 +142,7 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
   );
 }
 
-export default function BoardCreator({ title, columns, dayColor, onClose, existingCode, taskId }) {
+export default function BoardCreator({ title, columns, mode, dayColor, onClose, existingCode, taskId }) {
   const [code, setCode] = useState(null);
   const [posts, setPosts] = useState([]);
   const [status, setStatus] = useState('creating');
@@ -152,6 +152,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
 
   // F3: Teacher input state
   const [teacherTexts, setTeacherTexts] = useState({});
+  const [galleryTeacherText, setGalleryTeacherText] = useState('');
 
   // F1: Saved boards state
   const [savedBoards, setSavedBoards] = useState([]);
@@ -161,7 +162,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
   // Lightbox state: index into allPhotos array, or null
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  const cols = columns || DEFAULT_COLUMNS;
+  const cols = mode === 'gallery' ? (columns || ['Galerie']) : (columns || DEFAULT_COLUMNS);
 
   // Collect all photos from all posts for lightbox navigation
   const allPhotos = useMemo(() => {
@@ -192,6 +193,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
       createdAt: Date.now(),
     };
     if (taskId) boardData.taskId = taskId;
+    if (mode) boardData.mode = mode;
 
     set(boardRef, boardData)
       .then(() => {
@@ -212,7 +214,7 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
       });
 
     return timeout;
-  }, [title, cols, taskId]);
+  }, [title, cols, taskId, mode]);
 
   // Create board on mount
   useEffect(() => {
@@ -368,6 +370,23 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
       console.error('[BoardCreator] Error posting teacher message:', err);
     });
     setTeacherTexts(prev => ({ ...prev, [colIndex]: '' }));
+  };
+
+  // Gallery mode: teacher post (column 0)
+  const handleGalleryPost = () => {
+    const text = galleryTeacherText.trim();
+    if (!text || !code) return;
+    const postsRef = ref(db, 'boards/' + code + '/posts');
+    push(postsRef, {
+      text,
+      author: '\u{1F31F} Lehrkraft',
+      column: 0,
+      color: '#B3E5FC',
+      timestamp: Date.now(),
+    }).catch((err) => {
+      console.error('[BoardCreator] Error posting gallery message:', err);
+    });
+    setGalleryTeacherText('');
   };
 
   // F1: Load saved boards
@@ -548,74 +567,140 @@ export default function BoardCreator({ title, columns, dayColor, onClose, existi
           </div>
         </div>
 
-        {/* Columns — fill remaining height */}
-        <div style={s.boardArea} className="board-columns-area">
-          <div style={s.colContainer}>
-            {cols.map((colName, ci) => {
-              const colPosts = posts.filter(p => p.column === ci);
-              return (
-                <div key={ci} style={s.column} className="board-column">
-                  {/* Sticky header */}
-                  <div style={{ ...s.colHeader, color: dayColor }} className="board-col-header">{colName}</div>
-                  {/* Scrollable posts */}
-                  <div style={s.colPosts} className="board-col-posts">
-                    {colPosts.map((p) => {
-                      const likeCount = p.likes ? Object.keys(p.likes).length : 0;
-                      return (
-                        <div key={p._key} className="board-post" style={{
-                          ...s.stickyNote,
-                          background: p.color || '#FFE0B2',
-                          border: likeCount >= 3 ? '2px solid rgba(231,76,60,0.3)' : 'none',
-                        }}>
-                          <div style={s.noteHeader}>
-                            <div style={s.noteAuthor}>{p.author}</div>
-                            <button
-                              onClick={() => handleDeletePost(p._key)}
-                              style={s.deletePostBtn}
-                              title="Beitrag löschen"
-                            >{'\u2715'}</button>
-                          </div>
-                          {p.imageUrl && (
-                            <img
-                              src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
-                              style={s.noteImage}
-                              onClick={() => openLightbox(p.imageUrl)}
-                            />
-                          )}
-                          {p.text && <div style={s.noteText}>{p.text}</div>}
-                          {likeCount > 0 && (
-                            <div style={s.likeInfo}>{'\u2764\uFE0F'} {likeCount}</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {colPosts.length === 0 && (
-                      <div style={s.emptyCol}>Noch keine Beiträge</div>
+        {/* Board content — gallery or columns */}
+        {mode === 'gallery' ? (
+          <div style={s.boardArea} className="board-columns-area">
+            {/* Gallery teacher input */}
+            <div style={s.galleryInputRow}>
+              <input
+                type="text"
+                value={galleryTeacherText}
+                onChange={(e) => setGalleryTeacherText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleGalleryPost(); }}
+                placeholder="Nachricht als Lehrkraft..."
+                style={s.galleryInputField}
+              />
+              <button
+                onClick={handleGalleryPost}
+                style={{ ...s.teacherSendBtn, background: dayColor || '#FF6B35' }}
+                disabled={!galleryTeacherText.trim()}
+              >
+                Senden
+              </button>
+            </div>
+            {/* Gallery grid */}
+            <div style={s.galleryGrid}>
+              {posts.map((p) => {
+                const likeCount = p.likes ? Object.keys(p.likes).length : 0;
+                return (
+                  <div key={p._key} className="board-post" style={{
+                    ...s.galleryCard,
+                    border: likeCount >= 3 ? '2px solid rgba(231,76,60,0.3)' : '1px solid rgba(0,0,0,0.06)',
+                  }}>
+                    {p.imageUrl && (
+                      <img
+                        src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
+                        style={s.galleryImage}
+                        onClick={() => openLightbox(p.imageUrl)}
+                      />
                     )}
+                    <div style={s.galleryCardInfo}>
+                      <div style={s.galleryAuthor}>{p.author}</div>
+                      {p.text && <div style={s.galleryText}>{p.text}</div>}
+                      <div style={s.galleryCardActions}>
+                        {likeCount > 0 && (
+                          <span style={s.likeInfo}>{'\u2764\uFE0F'} {likeCount}</span>
+                        )}
+                        <button
+                          onClick={() => handleDeletePost(p._key)}
+                          style={s.deletePostBtn}
+                          title="Beitrag löschen"
+                        >{'\u2715'}</button>
+                      </div>
+                    </div>
                   </div>
-                  {/* Sticky footer: teacher input */}
-                  <div style={s.teacherInput} className="board-teacher-input">
-                    <input
-                      type="text"
-                      value={teacherTexts[ci] || ''}
-                      onChange={(e) => setTeacherTexts(prev => ({ ...prev, [ci]: e.target.value }))}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleTeacherPost(ci); }}
-                      placeholder="Nachricht..."
-                      style={s.teacherInputField}
-                    />
-                    <button
-                      onClick={() => handleTeacherPost(ci)}
-                      style={{ ...s.teacherSendBtn, background: dayColor || '#FF6B35' }}
-                      disabled={!(teacherTexts[ci] || '').trim()}
-                    >
-                      Senden
-                    </button>
+                );
+              })}
+              {posts.length === 0 && (
+                <div style={s.galleryEmpty}>
+                  <div style={{ fontSize: 48 }}>{'\u{1F4F7}'}</div>
+                  <div>Noch keine Fotos hochgeladen</div>
+                  <div style={{ fontSize: 14, color: '#aaa' }}>
+                    {`Sch\u00fcler k\u00f6nnen \u00fcber den QR-Code Fotos hochladen`}
                   </div>
                 </div>
-              );
-            })}
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div style={s.boardArea} className="board-columns-area">
+            <div style={s.colContainer}>
+              {cols.map((colName, ci) => {
+                const colPosts = posts.filter(p => p.column === ci);
+                return (
+                  <div key={ci} style={s.column} className="board-column">
+                    {/* Sticky header */}
+                    <div style={{ ...s.colHeader, color: dayColor }} className="board-col-header">{colName}</div>
+                    {/* Scrollable posts */}
+                    <div style={s.colPosts} className="board-col-posts">
+                      {colPosts.map((p) => {
+                        const likeCount = p.likes ? Object.keys(p.likes).length : 0;
+                        return (
+                          <div key={p._key} className="board-post" style={{
+                            ...s.stickyNote,
+                            background: p.color || '#FFE0B2',
+                            border: likeCount >= 3 ? '2px solid rgba(231,76,60,0.3)' : 'none',
+                          }}>
+                            <div style={s.noteHeader}>
+                              <div style={s.noteAuthor}>{p.author}</div>
+                              <button
+                                onClick={() => handleDeletePost(p._key)}
+                                style={s.deletePostBtn}
+                                title="Beitrag löschen"
+                              >{'\u2715'}</button>
+                            </div>
+                            {p.imageUrl && (
+                              <img
+                                src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
+                                style={s.noteImage}
+                                onClick={() => openLightbox(p.imageUrl)}
+                              />
+                            )}
+                            {p.text && <div style={s.noteText}>{p.text}</div>}
+                            {likeCount > 0 && (
+                              <div style={s.likeInfo}>{'\u2764\uFE0F'} {likeCount}</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {colPosts.length === 0 && (
+                        <div style={s.emptyCol}>Noch keine Beiträge</div>
+                      )}
+                    </div>
+                    {/* Sticky footer: teacher input */}
+                    <div style={s.teacherInput} className="board-teacher-input">
+                      <input
+                        type="text"
+                        value={teacherTexts[ci] || ''}
+                        onChange={(e) => setTeacherTexts(prev => ({ ...prev, [ci]: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleTeacherPost(ci); }}
+                        placeholder="Nachricht..."
+                        style={s.teacherInputField}
+                      />
+                      <button
+                        onClick={() => handleTeacherPost(ci)}
+                        style={{ ...s.teacherSendBtn, background: dayColor || '#FF6B35' }}
+                        disabled={!(teacherTexts[ci] || '').trim()}
+                      >
+                        Senden
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
 
@@ -1095,6 +1180,90 @@ const s = {
     borderRadius: 14,
     padding: 10,
     boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+  },
+  // Gallery mode styles
+  galleryInputRow: {
+    display: 'flex',
+    gap: 8,
+    flexShrink: 0,
+    padding: '0 0 8px',
+  },
+  galleryInputField: {
+    flex: 1,
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    fontWeight: 500,
+    padding: '8px 14px',
+    border: '1px solid rgba(0,0,0,0.12)',
+    borderRadius: 10,
+    outline: 'none',
+    background: '#FAFAFA',
+    minWidth: 0,
+  },
+  galleryGrid: {
+    flex: 1,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+    gap: 14,
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    padding: '4px 2px',
+    alignContent: 'start',
+  },
+  galleryCard: {
+    background: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+    boxShadow: '0 3px 16px rgba(0,0,0,0.07)',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  galleryImage: {
+    width: '100%',
+    aspectRatio: '4/3',
+    objectFit: 'cover',
+    cursor: 'pointer',
+    display: 'block',
+  },
+  galleryCardInfo: {
+    padding: '10px 14px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  galleryAuthor: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: '#8B5A2B',
+    opacity: 0.8,
+    fontFamily: "'Fredoka', sans-serif",
+  },
+  galleryText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: 600,
+    fontFamily: "'Fredoka', sans-serif",
+    lineHeight: 1.4,
+  },
+  galleryCardActions: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  galleryEmpty: {
+    gridColumn: '1 / -1',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: '60px 20px',
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 18,
+    color: '#999',
+    fontWeight: 600,
+    textAlign: 'center',
   },
   // Loading / Error
   loadingText: {

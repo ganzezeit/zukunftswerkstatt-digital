@@ -240,6 +240,15 @@ export default function App() {
   }, [state.completedSteps]);
 
   // -- Intro flow handlers --
+  // Prefetch critical chunks while on splash screen
+  useEffect(() => {
+    if (screen === 'splash') {
+      // Prefetch DayScreen + StepViewer (biggest chunks) in background
+      import('./DayScreen').catch(() => {});
+      import('./StepViewer').catch(() => {});
+    }
+  }, [screen]);
+
   const handleSplashStart = () => {
     playClickSound();
     // Ensure music is playing — playMenu() is a no-op if already playing
@@ -373,10 +382,10 @@ export default function App() {
       const day = getDayData();
       const step = day?.steps[pendingStepAfterEnergizer];
       if (step) {
+        // Energy reward already applied in setState above; only deduct step cost here
         setState(prev => ({
           ...prev,
-          energy: Math.max(0, Math.min(MAX_ENERGY, prev.energy + reward) - step.energyCost),
-          usedEnergizers: [...prev.usedEnergizers, energizer.id]
+          energy: Math.max(0, prev.energy - step.energyCost),
         }));
         setViewingStepIndex(pendingStepAfterEnergizer);
         setPendingStepAfterEnergizer(null);
@@ -588,6 +597,7 @@ export default function App() {
   return (
     <div className="no-select" style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* TopBar always visible — minimal mode on intro screens */}
+      <div className="app-top-bar">
       <TopBar
         energy={state.energy}
         volume={state.volume}
@@ -607,9 +617,10 @@ export default function App() {
         className={className}
         saveStatus={className ? saveStatus : null}
       />
+      </div>
 
       {/* Screen content with fade transitions */}
-      <div style={{
+      <div className="app-screen-content" style={{
         opacity: screenOpacity,
         transition: `opacity ${TRANSITION_MS}ms ease-in-out`,
         width: '100%',
@@ -760,7 +771,7 @@ export default function App() {
 
       {/* Bottom logo bar — visible on map, day, dayIntro screens */}
       {['map', 'day', 'dayIntro'].includes(screen) && (
-        <div style={{
+        <div className="app-bottom-bar" style={{
           position: 'fixed',
           bottom: 0,
           left: 0,

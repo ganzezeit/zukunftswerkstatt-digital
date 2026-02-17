@@ -6,6 +6,7 @@ export default function VideoPlayer({ step, dayColor, onComplete }) {
   const { content } = step;
   const [error, setError] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const videoRef = useRef(null);
 
   // Pause music while playing video
@@ -22,15 +23,21 @@ export default function VideoPlayer({ step, dayColor, onComplete }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onComplete]);
 
-  // Set start time once video is loaded
+  // Set start time once video is loaded + dismiss loading spinner
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     const handleLoaded = () => {
       if (content.startTime) video.currentTime = content.startTime;
+      setLoading(false);
     };
+    const handleCanPlay = () => setLoading(false);
     video.addEventListener('loadedmetadata', handleLoaded);
-    return () => video.removeEventListener('loadedmetadata', handleLoaded);
+    video.addEventListener('canplay', handleCanPlay);
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoaded);
+      video.removeEventListener('canplay', handleCanPlay);
+    };
   }, [content.startTime]);
 
   // Watch for endTime
@@ -71,13 +78,20 @@ export default function VideoPlayer({ step, dayColor, onComplete }) {
       <button onClick={(e) => { e.stopPropagation(); handleDone(); }} style={styles.closeBtn}>{'\u2715'}</button>
 
       <div style={styles.videoArea}>
+        {loading && (
+          <div style={styles.loadingOverlay}>
+            <div style={styles.spinner} />
+            <p style={styles.loadingText}>Video wird geladen...</p>
+          </div>
+        )}
         <video
           ref={videoRef}
           src={content.src}
-          style={styles.video}
+          style={{ ...styles.video, opacity: loading ? 0 : 1 }}
           controls
           controlsList="nodownload"
           autoPlay
+          preload="auto"
           onEnded={handleEnd}
           onError={() => setError(true)}
         />
@@ -185,5 +199,28 @@ const styles = {
     background: 'rgba(255,255,255,0.05)',
     padding: '6px 14px',
     borderRadius: 8,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    zIndex: 1,
+  },
+  spinner: {
+    width: 48,
+    height: 48,
+    border: '4px solid rgba(255,255,255,0.15)',
+    borderTop: '4px solid white',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 16,
+    fontFamily: "'Fredoka', sans-serif",
+    fontWeight: 600,
   },
 };

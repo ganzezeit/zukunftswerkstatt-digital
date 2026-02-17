@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import BoardCreator from './BoardCreator';
 import { playClickSound } from '../utils/audio';
 
-export default function MissionBoardButton({ taskId, referenceTaskId, title, columns, buttonLabel, dayColor }) {
+export default function MissionBoardButton({ taskId, referenceTaskId, title, columns, mode, buttonLabel, dayColor }) {
   const [showBoard, setShowBoard] = useState(false);
   const [existingBoardCode, setExistingBoardCode] = useState(null);
   const [toast, setToast] = useState(null);
@@ -41,15 +42,17 @@ export default function MissionBoardButton({ taskId, referenceTaskId, title, col
         <div style={styles.toast}>{toast}</div>
       )}
 
-      {showBoard && (
+      {showBoard && createPortal(
         <BoardCreator
           title={title || 'Klassen-Board'}
           columns={columns}
+          mode={mode}
           dayColor={dayColor}
           onClose={() => setShowBoard(false)}
           existingCode={existingBoardCode || undefined}
           taskId={referenceTaskId ? undefined : taskId}
-        />
+        />,
+        document.body
       )}
     </>
   );

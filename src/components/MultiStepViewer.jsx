@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import GlossaryTooltip from './GlossaryTooltip';
 import LandeskundeViewer from './LandeskundeViewer';
 import MatchingGameSubStep from './MatchingGameSubStep';
@@ -175,13 +176,14 @@ export default function MultiStepViewer({ step, dayColor, onComplete, onBack }) 
         )}
       </div>
 
-      {showBoard && (
+      {showBoard && createPortal(
         <BoardCreator
           title={sub.title || 'Klassen-Board'}
           dayColor={dayColor}
           onClose={() => setShowBoard(false)}
           taskId={sub.taskId}
-        />
+        />,
+        document.body
       )}
 
       <StickyButton isLast={isLast} dayColor={dayColor} onNext={handleNext} />

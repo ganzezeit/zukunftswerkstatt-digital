@@ -270,6 +270,111 @@ export default function BoardPage({ code }) {
   }
 
   const columns = board.columns || [];
+  const isGallery = board.mode === 'gallery';
+
+  // Gallery mode: student upload view
+  if (isGallery) {
+    return (
+      <>
+      <div style={s.page}>
+        <button onClick={handleSoundToggle} style={s.soundToggle}>
+          <img
+            src={muted ? '/images/ui/button-sound-off.png' : '/images/ui/button-sound-on.png'}
+            alt={muted ? 'Ton aus' : 'Ton an'}
+            style={{ width: 28, height: 28, objectFit: 'contain' }}
+            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'inline'; }}
+          />
+          <span style={{ display: 'none', fontSize: 20 }}>{muted ? '\u{1F507}' : '\u{1F50A}'}</span>
+        </button>
+
+        <h1 style={s.boardTitle}>{board.title}</h1>
+        <p style={s.boardAuthor}>Du bist: <strong>{author}</strong></p>
+
+        {/* Gallery upload area */}
+        {addingCol === 0 ? (
+          <div style={{ ...s.addForm, width: '100%', maxWidth: 500 }}>
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder={selectedFile ? 'Bildunterschrift (optional)...' : 'Beschreibung...'}
+              autoFocus
+              rows={2}
+              style={s.addInput}
+            />
+            {previewUrl && (
+              <div style={s.previewContainer}>
+                <img src={previewUrl} alt="Vorschau" style={s.previewImage} />
+                <button onClick={clearPhoto} style={s.previewRemove}>{'\u2715'}</button>
+              </div>
+            )}
+            {uploading && (
+              <div style={s.uploadStatus}>
+                <div style={s.progressBarOuter}>
+                  <div style={{ ...s.progressBarInner, width: `${uploadProgress}%` }} />
+                </div>
+                <span style={s.uploadText}>Wird hochgeladen... {uploadProgress}%</span>
+              </div>
+            )}
+            {uploadError && (
+              <div style={s.uploadErrorBox}>
+                <span style={s.uploadErrorText}>{uploadError}</span>
+                <button onClick={() => handleSubmit(0)} style={s.retryBtn}>Nochmal</button>
+              </div>
+            )}
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} />
+            <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleFileSelect} style={{ display: 'none' }} />
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={s.photoBtnGroup}>
+                <button onClick={() => cameraInputRef.current?.click()} style={s.photoBtn} disabled={uploading}>{'\u{1F4F7}'}</button>
+                <span style={s.photoBtnLabel}>Foto</span>
+              </div>
+              <div style={s.photoBtnGroup}>
+                <button onClick={() => galleryInputRef.current?.click()} style={s.photoBtn} disabled={uploading}>{'\u{1F5BC}\uFE0F'}</button>
+                <span style={s.photoBtnLabel}>Galerie</span>
+              </div>
+              <button onClick={() => handleSubmit(0)} style={{ ...s.sendBtn, opacity: uploading ? 0.5 : 1 }} disabled={uploading || (!noteText.trim() && !selectedFile)}>
+                {uploading ? 'Wird gesendet...' : 'Hochladen'}
+              </button>
+              <button onClick={() => { setAddingCol(null); setNoteText(''); clearPhoto(); }} style={s.cancelBtn} disabled={uploading}>
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setAddingCol(0)} style={s.galleryUploadBtn}>
+            {'\u{1F4F7}'} Foto hochladen
+          </button>
+        )}
+
+        {/* Gallery posts */}
+        <div style={s.galleryPostsContainer}>
+          {posts.map((p) => (
+            <div key={p._key} style={{ ...s.galleryPostCard, background: p.color || '#FFE0B2' }}>
+              {p.imageUrl && (
+                <img
+                  src={p.imageUrl} alt="Foto" loading="lazy" decoding="async"
+                  style={s.galleryPostImage}
+                  onClick={() => setLightboxSrc(p.imageUrl)}
+                />
+              )}
+              <div style={s.galleryPostInfo}>
+                <div style={s.noteAuthor}>{p.author}</div>
+                {p.text && <div style={s.noteText}>{p.text}</div>}
+                <LikeButton postKey={p._key} likes={p.likes} author={author} code={code} />
+              </div>
+            </div>
+          ))}
+          {posts.length === 0 && (
+            <div style={{ textAlign: 'center', color: '#aaa', fontWeight: 600, padding: '40px 0' }}>
+              Noch keine Fotos. Sei der Erste!
+            </div>
+          )}
+        </div>
+      </div>
+      {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </>
+    );
+  }
 
   return (
     <>
@@ -768,6 +873,44 @@ const s = {
     justifyContent: 'center',
     boxShadow: '0 2px 8px rgba(139,90,43,0.1)',
     padding: 0,
+  },
+  // Gallery mode (student)
+  galleryUploadBtn: {
+    width: '100%',
+    maxWidth: 500,
+    padding: '16px 24px',
+    fontSize: 20,
+    fontFamily: "'Lilita One', cursive",
+    background: '#FF6B35',
+    color: 'white',
+    border: 'none',
+    borderRadius: 16,
+    cursor: 'pointer',
+    boxShadow: '0 4px 16px rgba(255,107,53,0.3)',
+    marginBottom: 20,
+  },
+  galleryPostsContainer: {
+    width: '100%',
+    maxWidth: 500,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+    paddingBottom: 40,
+  },
+  galleryPostCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    boxShadow: '0 3px 16px rgba(0,0,0,0.07)',
+  },
+  galleryPostImage: {
+    width: '100%',
+    maxHeight: 400,
+    objectFit: 'cover',
+    display: 'block',
+    cursor: 'pointer',
+  },
+  galleryPostInfo: {
+    padding: '10px 14px',
   },
   // Lightbox
   lightboxOverlay: {

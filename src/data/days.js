@@ -126,7 +126,7 @@ export const DAYS = [
               title: "Ergebnisse",
               subType: "text",
               text: "Fotografiert und ladet eure Zeichnungen mit eurem Namen hier hoch!",
-              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", columns: ["Eure Zeichnungen \u{1F3A8}"], buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
+              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", mode: "gallery", buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
             },
             {
               title: "Lebensweltkarten: Gestalten",
@@ -137,7 +137,7 @@ export const DAYS = [
               title: "Lebensweltkarten: Präsentation",
               subType: "text",
               text: "Stellt eure Lebensweltkarten der Klasse vor. Erkl\u00e4rt, welche Orte euch wichtig sind und warum. Vergleicht: Was haben eure Karten gemeinsam? Was ist unterschiedlich?",
-              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", columns: ["Eure Zeichnungen \u{1F3A8}"], buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
+              boardConfig: { taskId: "t1-5-ergebnisse", title: "Lebensweltkarten-Board", mode: "gallery", buttonLabel: "\u{1F4CB} Board \u00f6ffnen" }
             }
           ]
         }

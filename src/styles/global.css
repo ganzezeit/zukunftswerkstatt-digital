@@ -60,6 +60,16 @@ button:focus-visible {
   -webkit-user-select: none;
 }
 
+/* ====== General print cleanup ====== */
+@media print {
+  /* Hide background screens (map, steps, energizers, top bar, bottom bar) during ANY print */
+  .app-screen-content,
+  .app-top-bar,
+  .app-bottom-bar {
+    display: none !important;
+  }
+}
+
 /* ====== Print stylesheet for Board PDF export ====== */
 @media print {
   @page {
@@ -74,6 +84,11 @@ button:focus-visible {
     width: auto !important;
     position: static !important;
     background: white !important;
+  }
+
+  /* Hide app content behind portaled board overlay */
+  #root:has(~ .board-overlay) {
+    display: none !important;
   }
 
   /* Convert the fixed overlay to a normal static block */
@@ -178,6 +193,7 @@ button:focus-visible {
 
 /* ====== Print stylesheet for Quiz Analysis ====== */
 @media print {
+
   .quiz-analysis-overlay {
     position: static !important;
     overflow: visible !important;
@@ -192,6 +208,9 @@ button:focus-visible {
 
 /* ====== Print stylesheet for Quiz Dialog (Einzelquiz Results/Comparison) ====== */
 @media print {
+  /* Hide everything in #root except the overlay being printed */
+  #root:has(.quiz-dialog-overlay) > *:not(.quiz-dialog-overlay) { display: none !important; }
+
   .quiz-dialog-overlay {
     position: static !important;
     overflow: visible !important;
@@ -215,6 +234,9 @@ button:focus-visible {
 
 /* ====== Print stylesheet for Weekly Report ====== */
 @media print {
+  /* Hide everything in #root except the overlay being printed */
+  #root:has(.weekly-report-overlay) > *:not(.weekly-report-overlay) { display: none !important; }
+
   .weekly-report-overlay {
     position: static !important;
     overflow: visible !important;
