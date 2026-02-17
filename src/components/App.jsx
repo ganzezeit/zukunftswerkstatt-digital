@@ -26,6 +26,7 @@ const TeacherPanel = lazy(() => import('./TeacherPanel'));
 const QuickBoardDialog = lazy(() => import('./QuickBoardDialog'));
 const QuizDialog = lazy(() => import('./QuizDialog'));
 const ChatManager = lazy(() => import('./ChatManager'));
+const ArtStudio = lazy(() => import('./ArtStudio'));
 const WeeklyReport = lazy(() => import('./WeeklyReport'));
 const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 
@@ -50,6 +51,7 @@ export default function App() {
   const [showQuickBoard, setShowQuickBoard] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [artStudioMode, setArtStudioMode] = useState(null); // null | 'room' | 'studio'
   const [showWeeklyReport, setShowWeeklyReport] = useState(false);
   const [showEnergizerPopup, setShowEnergizerPopup] = useState(false);
   const [freeEnergizer, setFreeEnergizer] = useState(false);
@@ -598,6 +600,8 @@ export default function App() {
         onOpenBoard={!isIntroScreen ? () => setShowQuickBoard(true) : undefined}
         onOpenQuiz={!isIntroScreen ? () => setShowQuiz(true) : undefined}
         onOpenChat={!isIntroScreen ? () => setShowChat(true) : undefined}
+        onOpenArtStudio={!isIntroScreen ? () => setArtStudioMode('studio') : undefined}
+        onOpenArtRoom={!isIntroScreen ? () => setArtStudioMode('room') : undefined}
         onLightningClick={!isIntroScreen ? handleLightningClick : undefined}
         className={className}
         saveStatus={className ? saveStatus : null}
@@ -720,6 +724,12 @@ export default function App() {
             onClose={() => setShowChat(false)}
             dayColor={dayData?.color || '#FF6B35'}
           />
+        </Suspense>
+      )}
+
+      {artStudioMode && (
+        <Suspense fallback={null}>
+          <ArtStudio onClose={() => setArtStudioMode(null)} initialMode={artStudioMode} />
         </Suspense>
       )}
 

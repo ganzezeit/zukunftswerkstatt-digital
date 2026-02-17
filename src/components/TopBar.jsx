@@ -142,11 +142,12 @@ function SaveIndicator({ status }) {
   );
 }
 
-export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, onOpenQuiz, onOpenChat, onLightningClick, className: klassenName, saveStatus }) {
+export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId, dayColor, onOpenTeacherPanel, onTitleClick, isIntro, onOpenBoard, onOpenQuiz, onOpenChat, onOpenArtStudio, onOpenArtRoom, onLightningClick, className: klassenName, saveStatus }) {
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
   const [muted, setMuted] = useState(false);
   const prevVolRef = useRef(0.3);
+  const [artDropdownOpen, setArtDropdownOpen] = useState(false);
 
   const handleTitleClick = useCallback(() => {
     clickCountRef.current += 1;
@@ -267,6 +268,34 @@ export default function TopBar({ energy, volume, onVolumeChange, dayName, dayId,
             title="Chat"
           />
         )}
+        {(onOpenArtStudio || onOpenArtRoom) && (
+          <div style={{ position: 'relative' }}>
+            <PngButton
+              src="/images/ui/button-art.png"
+              alt={'\u{1F3A8}'}
+              size={30}
+              onClick={() => setArtDropdownOpen(!artDropdownOpen)}
+              title="KI-Kunststudio"
+            />
+            {artDropdownOpen && (
+              <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setArtDropdownOpen(false)} />
+                <div style={styles.artDropdown}>
+                  {onOpenArtRoom && (
+                    <button onClick={() => { setArtDropdownOpen(false); onOpenArtRoom(); }} style={styles.artDropdownItem}>
+                      {'\u{1F3A8}'} Kunstraum
+                    </button>
+                  )}
+                  {onOpenArtStudio && (
+                    <button onClick={() => { setArtDropdownOpen(false); onOpenArtStudio(); }} style={styles.artDropdownItem}>
+                      {'\u270F\uFE0F'} Eigene Kreation
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
         <EnergyBar energy={energy} onLightningClick={onLightningClick} />
         {saveStatus && <SaveIndicator status={saveStatus} />}
         <PngButton
@@ -383,5 +412,37 @@ const styles = {
     padding: '3px 10px',
     borderRadius: 10,
     border: '1.5px solid rgba(255, 107, 53, 0.25)',
+  },
+  artDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: 6,
+    background: 'rgba(255, 248, 240, 0.97)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderRadius: 14,
+    boxShadow: '0 4px 20px rgba(139, 90, 43, 0.18)',
+    border: '1px solid rgba(255, 166, 107, 0.25)',
+    overflow: 'hidden',
+    zIndex: 200,
+    minWidth: 180,
+  },
+  artDropdownItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+    padding: '10px 16px',
+    background: 'none',
+    border: 'none',
+    borderBottom: '1px solid rgba(139, 90, 43, 0.06)',
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#8B5A2B',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
   },
 };
