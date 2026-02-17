@@ -5,6 +5,7 @@ import { db } from '../firebase';
 
 const API_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/generate-image';
 const VIDEO_API_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/generate-video';
+const MUSIC_API_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/generate-music';
 const POLL_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/poll-image';
 
 function generateCode() {
@@ -44,6 +45,14 @@ const UI = {
     videoLoading: 'KI erstellt dein Video... Dies kann bis zu 2 Minuten dauern',
     videoGallery: 'Deine Videos',
     videoDisabled: 'Video-Erstellung ist in diesem Raum nicht aktiviert.',
+    musicPlaceholder: 'Beschreibe deine Musik...',
+    musicGenerate: 'Musik erstellen!',
+    musicLoading: 'KI komponiert deine Musik...',
+    musicGallery: 'Deine Musik',
+    musicLyrics: 'Songtext hinzuf\u00FCgen (optional)',
+    musicLyricsPlaceholder: 'Schreibe deinen Songtext hier...\n\n[Strophe 1]\nDein Text...\n\n[Refrain]\nDein Text...',
+    musicLyricsHint: 'Verwende [Strophe], [Refrain], [Bridge] f\u00FCr die Struktur',
+    musicDisabled: 'Musik-Erstellung ist in diesem Raum nicht aktiviert.',
   },
   en: {
     title: 'AI Art Studio',
@@ -69,6 +78,14 @@ const UI = {
     videoLoading: 'AI is creating your video... This can take up to 2 minutes',
     videoGallery: 'Your Videos',
     videoDisabled: 'Video creation is not enabled in this room.',
+    musicPlaceholder: 'Describe your music...',
+    musicGenerate: 'Create Music!',
+    musicLoading: 'AI is composing your music...',
+    musicGallery: 'Your Music',
+    musicLyrics: 'Add lyrics (optional)',
+    musicLyricsPlaceholder: 'Write your lyrics here...\n\n[Verse 1]\nYour text...\n\n[Chorus]\nYour text...',
+    musicLyricsHint: 'Use [Verse], [Chorus], [Bridge] for structure',
+    musicDisabled: 'Music creation is not enabled in this room.',
   },
   tr: {
     title: 'Yapay Zeka Sanat Stüdyosu',
@@ -94,6 +111,14 @@ const UI = {
     videoLoading: 'Yapay zeka videonuzu oluşturuyor... Bu 2 dakika sürebilir',
     videoGallery: 'Videolarınız',
     videoDisabled: 'Bu odada video oluşturma etkin değil.',
+    musicPlaceholder: 'Müziğinizi tarif edin...',
+    musicGenerate: 'Müzik Oluştur!',
+    musicLoading: 'Yapay zeka müziğinizi besteliyor...',
+    musicGallery: 'Müzikleriniz',
+    musicLyrics: 'Şarkı sözü ekle (isteğe bağlı)',
+    musicLyricsPlaceholder: 'Şarkı sözünüzü buraya yazın...',
+    musicLyricsHint: 'Yapı için [Kıta], [Nakarat], [Köprü] kullanın',
+    musicDisabled: 'Bu odada müzik oluşturma etkin değil.',
   },
   sw: {
     title: 'Studio ya Sanaa ya AI',
@@ -119,6 +144,14 @@ const UI = {
     videoLoading: 'AI inaunda video yako...',
     videoGallery: 'Video Zako',
     videoDisabled: 'Utengenezaji wa video haujawezeshwa.',
+    musicPlaceholder: 'Eleza muziki wako...',
+    musicGenerate: 'Tengeneza Muziki!',
+    musicLoading: 'AI inatunga muziki wako...',
+    musicGallery: 'Muziki Wako',
+    musicLyrics: 'Ongeza maneno ya wimbo',
+    musicLyricsPlaceholder: 'Andika maneno yako hapa...',
+    musicLyricsHint: 'Tumia [Ubeti], [Kiitikio], [Daraja]',
+    musicDisabled: 'Utengenezaji wa muziki haujawezeshwa.',
   },
   fr: {
     title: 'Studio d\'Art IA',
@@ -144,8 +177,28 @@ const UI = {
     videoLoading: 'L\'IA crée votre vidéo... Cela peut prendre 2 minutes',
     videoGallery: 'Vos Vidéos',
     videoDisabled: 'La création de vidéos n\'est pas activée.',
+    musicPlaceholder: 'Décrivez votre musique...',
+    musicGenerate: 'Créer la musique !',
+    musicLoading: 'L\'IA compose votre musique...',
+    musicGallery: 'Vos Musiques',
+    musicLyrics: 'Ajouter des paroles (optionnel)',
+    musicLyricsPlaceholder: 'Écrivez vos paroles ici...',
+    musicLyricsHint: 'Utilisez [Couplet], [Refrain], [Pont]',
+    musicDisabled: 'La création de musique n\'est pas activée.',
   },
 };
+
+const GENRES = [
+  { id: 'pop', label: 'Pop', emoji: '\u{1F3B8}' },
+  { id: 'electronic', label: 'Elektronisch', emoji: '\u{1F3B9}' },
+  { id: 'jazz', label: 'Jazz', emoji: '\u{1F3BA}' },
+  { id: 'hiphop', label: 'Hip-Hop', emoji: '\u{1F941}' },
+  { id: 'classical', label: 'Klassik', emoji: '\u{1F3BB}' },
+  { id: 'world', label: 'Weltmusik', emoji: '\u{1F30D}' },
+  { id: 'ambient', label: 'Ambient', emoji: '\u{1F3B6}' },
+  { id: 'rock', label: 'Rock', emoji: '\u{1F3A4}' },
+  { id: 'custom', label: 'Custom', emoji: '\u270D\uFE0F' },
+];
 
 const STYLES = [
   { id: 'illustration', label: 'Illustration', emoji: '\u{1F58C}\uFE0F', color: '#FFE0B2' },
@@ -189,11 +242,28 @@ export default function ArtStudio({ onClose, initialMode }) {
   const [vElapsed, setVElapsed] = useState(0);
   const vElapsedRef = useRef(null);
 
+  // Music state
+  const [mPrompt, setMPrompt] = useState('');
+  const [mModel, setMModel] = useState('schnell');
+  const [mGenre, setMGenre] = useState('');
+  const [mLyrics, setMLyrics] = useState('');
+  const [mShowLyrics, setMShowLyrics] = useState(false);
+  const [mInstrumental, setMInstrumental] = useState(false);
+  const [mSongName, setMSongName] = useState('');
+  const [mGenerating, setMGenerating] = useState(false);
+  const [mResult, setMResult] = useState(null);
+  const [mError, setMError] = useState(null);
+  const [mGallery, setMGallery] = useState([]);
+  const [mElapsed, setMElapsed] = useState(0);
+  const mElapsedRef = useRef(null);
+  const [mPlaying, setMPlaying] = useState(null);
+
   // Room state
   const [roomCode, setRoomCode] = useState(() => localStorage.getItem('artroom-teacher-code') || '');
   const [room, setRoom] = useState(null);
   const [studentImages, setStudentImages] = useState([]);
   const [studentVideos, setStudentVideos] = useState([]);
+  const [studentMusic, setStudentMusic] = useState([]);
   const [showRoom, setShowRoom] = useState(initialMode === 'room');
 
   // Multi-room state
@@ -262,6 +332,20 @@ export default function ArtStudio({ onClose, initialMode }) {
     return () => unsub();
   }, [roomCode]);
 
+  // Subscribe to student music
+  useEffect(() => {
+    if (!roomCode) { setStudentMusic([]); return; }
+    const musRef = ref(db, 'artRooms/' + roomCode + '/music');
+    const unsub = onValue(musRef, (snap) => {
+      const data = snap.val();
+      if (!data) { setStudentMusic([]); return; }
+      const list = Object.entries(data).map(([k, v]) => ({ id: k, ...v }));
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setStudentMusic(list);
+    });
+    return () => unsub();
+  }, [roomCode]);
+
   // Fake progress bar
   useEffect(() => {
     if (!generating) { setProgress(0); return; }
@@ -294,6 +378,7 @@ export default function ArtStudio({ onClose, initialMode }) {
         id, name: v.name,
         allowedModels: v.allowedModels || ['schnell', 'quality'],
         videoEnabled: v.videoEnabled || false,
+        musikEnabled: v.musikEnabled || false,
         participants: v.participants
           ? (Array.isArray(v.participants) ? v.participants : Object.values(v.participants))
           : [],
@@ -378,6 +463,11 @@ export default function ArtStudio({ onClose, initialMode }) {
   const handleDeleteVideo = async (vidId) => {
     if (!roomCode) return;
     await remove(ref(db, 'artRooms/' + roomCode + '/videos/' + vidId));
+  };
+
+  const handleDeleteMusic = async (musId) => {
+    if (!roomCode) return;
+    await remove(ref(db, 'artRooms/' + roomCode + '/music/' + musId));
   };
 
   // === HTML5 Drag & Drop ===
@@ -598,6 +688,15 @@ export default function ArtStudio({ onClose, initialMode }) {
     return () => { if (vElapsedRef.current) clearInterval(vElapsedRef.current); };
   }, [vGenerating]);
 
+  // Music elapsed timer
+  useEffect(() => {
+    if (!mGenerating) { setMElapsed(0); if (mElapsedRef.current) clearInterval(mElapsedRef.current); return; }
+    setMElapsed(0);
+    const start = Date.now();
+    mElapsedRef.current = setInterval(() => setMElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => { if (mElapsedRef.current) clearInterval(mElapsedRef.current); };
+  }, [mGenerating]);
+
   const handleVideoGenerate = useCallback(async () => {
     if (!vPrompt.trim() || vGenerating) return;
     setVGenerating(true);
@@ -697,6 +796,112 @@ export default function ArtStudio({ onClose, initialMode }) {
     handleVideoGenerate();
   };
 
+  const handleMusicGenerate = useCallback(async () => {
+    if (!mPrompt.trim() || mGenerating) return;
+    setMGenerating(true);
+    setMResult(null);
+    setMError(null);
+
+    try {
+      const res = await fetch(MUSIC_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: mPrompt.trim(),
+          model: mModel,
+          lyrics: (!mInstrumental && mLyrics.trim()) ? mLyrics.trim() : undefined,
+          genre: mGenre || undefined,
+          instrumental: mInstrumental,
+        }),
+      });
+
+      let data;
+      try { data = await res.json(); } catch {
+        setMError(`HTTP ${res.status}`);
+        setMGenerating(false);
+        return;
+      }
+
+      if (!res.ok) {
+        if (data.error === 'unsafe') setMError('unsafe');
+        else setMError(data.details || data.error || `HTTP ${res.status}`);
+        setMGenerating(false);
+        return;
+      }
+
+      if (data.audioUrl) {
+        setMResult(data);
+        setMGallery(prev => [{ ...data, timestamp: Date.now(), genre: mGenre, prompt: mPrompt.trim(), songName: mSongName.trim() }, ...prev]);
+        setMGenerating(false);
+        return;
+      }
+
+      // Async polling
+      if (data.status === 'processing' && data.pollUrl) {
+        const maxPolls = 60; // 2 minutes
+        let polls = 0;
+        while (polls < maxPolls) {
+          await new Promise(r => setTimeout(r, 2000));
+          polls++;
+          try {
+            const pollRes = await fetch(POLL_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pollUrl: data.pollUrl }),
+            });
+            const pollData = await pollRes.json();
+            if (pollData.status === 'succeeded' && pollData.imageUrl) {
+              const finalData = { audioUrl: pollData.imageUrl, enhancedPrompt: data.enhancedPrompt, originalPrompt: data.originalPrompt, model: mModel };
+              setMResult(finalData);
+              setMGallery(prev => [{ ...finalData, timestamp: Date.now(), genre: mGenre, prompt: mPrompt.trim(), songName: mSongName.trim() }, ...prev]);
+              setMGenerating(false);
+              return;
+            }
+            if (pollData.status === 'failed') {
+              setMError(pollData.error || 'Musikgenerierung fehlgeschlagen');
+              setMGenerating(false);
+              return;
+            }
+          } catch { /* keep trying */ }
+        }
+        setMError('Zeitüberschreitung - bitte erneut versuchen');
+        setMGenerating(false);
+        return;
+      }
+
+      setMError('Unerwartete Antwort vom Server');
+    } catch (err) {
+      setMError(`Netzwerkfehler: ${err.message}`);
+    }
+    setMGenerating(false);
+  }, [mPrompt, mModel, mLyrics, mGenre, mInstrumental, mSongName, mGenerating]);
+
+  const handleMusicDownload = useCallback(async (audioUrl, name) => {
+    const url = audioUrl || mResult?.audioUrl;
+    if (!url) return;
+    const fileName = (name || mSongName || 'ki-musik-' + Date.now()).replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, '') + '.mp3';
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, '_blank');
+    }
+  }, [mResult, mSongName]);
+
+  const handleMusicRetry = () => {
+    setMResult(null);
+    setMError(null);
+    handleMusicGenerate();
+  };
+
   const formatTime = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
   const roomUrl = roomCode ? `${window.location.origin}/art/${roomCode}` : '';
@@ -736,6 +941,10 @@ export default function ArtStudio({ onClose, initialMode }) {
               onClick={() => setActiveTab('video')}
               style={{ ...st.tabBtn, ...(activeTab === 'video' ? st.tabActive : {}) }}
             >{'\u{1F3AC}'} Video</button>
+            <button
+              onClick={() => setActiveTab('music')}
+              style={{ ...st.tabBtn, ...(activeTab === 'music' ? st.tabActive : {}) }}
+            >{'\u{1F3B5}'} Musik</button>
           </div>
         )}
 
@@ -768,6 +977,17 @@ export default function ArtStudio({ onClose, initialMode }) {
                       color: room?.settings?.videoEnabled ? '#A78BFA' : 'rgba(255,255,255,0.4)',
                     }}>
                       {'\u{1F3AC}'} Video {room?.settings?.videoEnabled ? 'AN' : 'AUS'}
+                    </button>
+                    <button onClick={async () => {
+                      if (!roomCode || !room) return;
+                      const current = room.settings?.musikEnabled === true;
+                      await set(ref(db, 'artRooms/' + roomCode + '/settings/musikEnabled'), !current);
+                    }} style={{
+                      ...st.roomCtrlBtn,
+                      background: room?.settings?.musikEnabled ? 'rgba(255,230,109,0.2)' : 'rgba(255,255,255,0.08)',
+                      color: room?.settings?.musikEnabled ? '#FFE66D' : 'rgba(255,255,255,0.4)',
+                    }}>
+                      {'\u{1F3B5}'} Musik {room?.settings?.musikEnabled ? 'AN' : 'AUS'}
                     </button>
                     <button onClick={handleCloseRoom} style={st.closeRoomBtn}>
                       {'\u2715'} {t.closeRoom}
@@ -898,6 +1118,21 @@ export default function ArtStudio({ onClose, initialMode }) {
                           >
                             {'\u{1F3AC}'}
                           </button>
+                          <button
+                            onClick={async () => {
+                              if (!roomCode) return;
+                              await set(ref(db, 'artRooms/' + roomCode + '/studios/' + studio.id + '/musikEnabled'), !studio.musikEnabled);
+                            }}
+                            style={{
+                              ...st.rmModelToggle,
+                              background: studio.musikEnabled ? 'rgba(255,230,109,0.3)' : 'rgba(255,255,255,0.05)',
+                              border: studio.musikEnabled ? '1px solid #FFE66D' : '1px solid rgba(255,255,255,0.1)',
+                              color: studio.musikEnabled ? '#FFE66D' : 'rgba(255,255,255,0.2)',
+                            }}
+                            title="Musik"
+                          >
+                            {'\u{1F3B5}'}
+                          </button>
                           {/* Expand/gallery button */}
                           <button
                             onClick={() => setExpandedStudio(expandedStudio === studio.id ? null : studio.id)}
@@ -983,8 +1218,8 @@ export default function ArtStudio({ onClose, initialMode }) {
               </div>
 
               {/* All student works */}
-              <div style={st.studentGalTitle}>{t.studentGallery} ({studentImages.length + studentVideos.length})</div>
-              {studentImages.length === 0 && studentVideos.length === 0 && (
+              <div style={st.studentGalTitle}>{t.studentGallery} ({studentImages.length + studentVideos.length + studentMusic.length})</div>
+              {studentImages.length === 0 && studentVideos.length === 0 && studentMusic.length === 0 && (
                 <div style={st.noImagesText}>{t.noImages}</div>
               )}
               {studentImages.length > 0 && (
@@ -1017,6 +1252,18 @@ export default function ArtStudio({ onClose, initialMode }) {
                       </div>
                     ))}
                   </div>
+                </>
+              )}
+              {studentMusic.length > 0 && (
+                <>
+                  <div style={{ ...st.studentGalSubtitle, marginTop: 12 }}>{'\u{1F3B5}'} Musik ({studentMusic.length})</div>
+                  {studentMusic.map(m => (
+                    <div key={m.id} style={st.musicGalItem}>
+                      <audio controls src={m.audioUrl} preload="none" style={{ flex: 1, height: 32 }} />
+                      <span style={st.studentGalAuthor}>{m.author}</span>
+                      <button onClick={() => handleDeleteMusic(m.id)} style={st.deleteImgBtn} title="Löschen">{'\u{1F5D1}\uFE0F'}</button>
+                    </div>
+                  ))}
                 </>
               )}
             </div>
@@ -1271,6 +1518,234 @@ export default function ArtStudio({ onClose, initialMode }) {
                         <video src={v.videoUrl} style={st.galImg} muted playsInline loop
                           onMouseEnter={e => e.target.play()}
                           onMouseLeave={e => { e.target.pause(); e.target.currentTime = 0; }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* MUSIC TAB */}
+          {!showRoom && activeTab === 'music' && (
+            <>
+              {/* Song name */}
+              <input
+                value={mSongName}
+                onChange={e => setMSongName(e.target.value.slice(0, 60))}
+                placeholder={'\u{1F3B5}'+ ' Songname (optional)'}
+                style={st.songNameInput}
+                maxLength={60}
+              />
+
+              <div style={st.promptWrap}>
+                <textarea
+                  value={mPrompt}
+                  onChange={e => setMPrompt(e.target.value.slice(0, 500))}
+                  placeholder={t.musicPlaceholder}
+                  style={st.textarea}
+                  maxLength={500}
+                  rows={3}
+                />
+                <div style={st.charCount}>{mPrompt.length}/500 {t.chars}</div>
+              </div>
+
+              {/* Instrumental toggle + Lyrics - only for quality model */}
+              {mModel === 'quality' && (
+                <>
+                  <button
+                    onClick={() => { setMInstrumental(!mInstrumental); if (!mInstrumental) setMShowLyrics(false); }}
+                    style={{
+                      ...st.instrumentalToggle,
+                      background: mInstrumental ? 'rgba(255,230,109,0.2)' : 'rgba(255,255,255,0.05)',
+                      border: mInstrumental ? '2px solid rgba(255,230,109,0.5)' : '2px solid rgba(255,255,255,0.15)',
+                      color: mInstrumental ? '#FFE66D' : 'rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    {'\u{1F3B9}'} Instrumental {mInstrumental ? 'AN' : 'AUS'}
+                  </button>
+
+                  {!mInstrumental && (
+                    <button
+                      onClick={() => setMShowLyrics(!mShowLyrics)}
+                      style={{
+                        ...st.lyricsToggle,
+                        background: mShowLyrics ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.05)',
+                        color: mShowLyrics ? '#A78BFA' : 'rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      {'\u{1F3A4}'} {t.musicLyrics} {mShowLyrics ? '\u25B2' : '\u25BC'}
+                    </button>
+                  )}
+
+                  {!mInstrumental && mShowLyrics && (
+                    <div style={st.promptWrap}>
+                      <textarea
+                        value={mLyrics}
+                        onChange={e => setMLyrics(e.target.value.slice(0, 1000))}
+                        placeholder={t.musicLyricsPlaceholder}
+                        style={{ ...st.textarea, minHeight: 120 }}
+                        maxLength={1000}
+                        rows={6}
+                      />
+                      <div style={st.charCount}>{mLyrics.length}/1000</div>
+                      <div style={st.lyricsHint}>{t.musicLyricsHint}</div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Genre chips */}
+              <div style={st.chipsRow}>
+                {GENRES.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setMGenre(mGenre === g.id ? '' : g.id)}
+                    style={{
+                      ...st.chip,
+                      background: mGenre === g.id ? 'rgba(167,139,250,0.25)' : 'rgba(255,255,255,0.08)',
+                      border: mGenre === g.id ? '2px solid rgba(167,139,250,0.6)' : '2px solid transparent',
+                      color: mGenre === g.id ? '#A78BFA' : 'rgba(255,255,255,0.7)',
+                    }}
+                  >
+                    <span style={{ fontSize: 18 }}>{g.emoji}</span>
+                    <span style={st.chipLabel}>{g.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Music model selector */}
+              <div style={st.modelRow}>
+                <button
+                  onClick={() => { setMModel('schnell'); setMInstrumental(true); setMShowLyrics(false); }}
+                  style={{
+                    ...st.modelBtn,
+                    background: mModel === 'schnell' ? 'rgba(78,205,196,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: mModel === 'schnell' ? '2px solid rgba(78,205,196,0.5)' : '2px solid rgba(255,255,255,0.1)',
+                    color: mModel === 'schnell' ? '#4ECDC4' : 'rgba(255,255,255,0.5)',
+                    boxShadow: mModel === 'schnell' ? '0 0 12px rgba(78,205,196,0.3)' : 'none',
+                  }}
+                >
+                  <span>{'\u26A1'} Schnell</span>
+                  <span style={st.modelHint}>{'\u{1F3B9}'} Instrumental ~30s</span>
+                </button>
+                <button
+                  onClick={() => setMModel('quality')}
+                  style={{
+                    ...st.modelBtn,
+                    background: mModel === 'quality' ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: mModel === 'quality' ? '2px solid rgba(167,139,250,0.5)' : '2px solid rgba(255,255,255,0.1)',
+                    color: mModel === 'quality' ? '#A78BFA' : 'rgba(255,255,255,0.5)',
+                    boxShadow: mModel === 'quality' ? '0 0 12px rgba(167,139,250,0.3)' : 'none',
+                  }}
+                >
+                  <span>{'\u2728'} Qualität</span>
+                  <span style={st.modelHint}>{'\u{1F3A4}'} + Lyrics ~40s</span>
+                </button>
+              </div>
+
+              {/* Generate music button */}
+              <button
+                onClick={handleMusicGenerate}
+                disabled={!mPrompt.trim() || mGenerating}
+                style={{
+                  ...st.generateBtn,
+                  background: 'linear-gradient(90deg, #A78BFA, #FF6B6B, #FFE66D, #4ECDC4, #A78BFA)',
+                  backgroundSize: '200% 100%',
+                  opacity: (!mPrompt.trim() || mGenerating) ? 0.5 : 1,
+                  cursor: (!mPrompt.trim() || mGenerating) ? 'default' : 'pointer',
+                }}
+              >
+                {'\u{1F3B5}'} {mGenerating ? t.musicLoading : t.musicGenerate}
+              </button>
+
+              {/* Music loading with elapsed time */}
+              {mGenerating && (
+                <div style={st.loadingWrap}>
+                  <div style={{ fontSize: 48, animation: 'artPulse 1.5s ease-in-out infinite' }}>{'\u{1F3B6}'}</div>
+                  <div style={st.loadingText}>{t.musicLoading}</div>
+                  <div style={st.elapsedTimer}>{'\u23F1\uFE0F'} {formatTime(mElapsed)}</div>
+                  <div style={st.elapsedHint}>
+                    {mElapsed < 10 ? 'Prompt wird verbessert...' :
+                     mElapsed < 25 ? 'Musik wird komponiert...' :
+                     mElapsed < 50 ? 'Noch einen Moment...' :
+                     'Fast fertig... Bitte warten'}
+                  </div>
+                </div>
+              )}
+
+              {/* Music error */}
+              {mError && !mGenerating && (
+                <div style={st.errorBox}>
+                  {mError === 'unsafe' ? t.unsafe : mError}
+                </div>
+              )}
+
+              {/* Music result */}
+              {mResult && !mGenerating && (
+                <div style={st.audioCard}>
+                  {mSongName && <div style={st.audioCardSongName}>{mSongName}</div>}
+                  <div style={st.audioVisual}>
+                    {[...Array(12)].map((_, i) => (
+                      <div key={i} style={{
+                        ...st.audioBar,
+                        height: 8 + Math.random() * 24,
+                        animationDelay: (i * 0.1) + 's',
+                      }} />
+                    ))}
+                  </div>
+                  <audio
+                    controls
+                    src={mResult.audioUrl}
+                    preload="auto"
+                    playsInline
+                    style={st.audioPlayer}
+                    onPlay={() => setMPlaying('result')}
+                    onPause={() => setMPlaying(null)}
+                    onEnded={() => setMPlaying(null)}
+                  />
+                  {mGenre && <span style={st.genreBadge}>{GENRES.find(g => g.id === mGenre)?.emoji} {GENRES.find(g => g.id === mGenre)?.label}</span>}
+                  <div style={st.resultActions}>
+                    <button onClick={() => handleMusicDownload()} style={st.actionBtn}>{'\u{2B07}\uFE0F'} MP3</button>
+                    <button onClick={handleMusicRetry} style={st.actionBtn}>{'\u{1F504}'} {t.retry}</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Music gallery */}
+              {mGallery.length > 0 && (
+                <div style={st.gallerySection}>
+                  <h3 style={st.galTitle}>{t.musicGallery}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {mGallery.map((m, i) => (
+                      <div key={i} style={st.musicGalItem}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+                          <button
+                            onClick={() => {
+                              const el = document.getElementById('mgal-' + i);
+                              if (el) { if (el.paused) el.play(); else el.pause(); }
+                            }}
+                            style={st.musicPlayBtn}
+                          >{mPlaying === 'gal-' + i ? '\u23F8' : '\u25B6'}</button>
+                          <div style={st.musicGalInfo}>
+                            <span style={st.musicGalTitle}>{m.songName || m.prompt?.slice(0, 40) || '...'}</span>
+                            {m.genre && <span style={st.genreBadgeSmall}>{GENRES.find(g => g.id === m.genre)?.label}</span>}
+                          </div>
+                          <button
+                            onClick={() => handleMusicDownload(m.audioUrl, m.songName || m.prompt?.slice(0, 30))}
+                            style={st.galDownloadBtn}
+                            title="MP3 herunterladen"
+                          >{'\u{2B07}\uFE0F'}</button>
+                        </div>
+                        <audio
+                          id={'mgal-' + i}
+                          src={m.audioUrl}
+                          controls
+                          style={{ width: '100%', height: 32 }}
+                          onPlay={() => setMPlaying('gal-' + i)}
+                          onPause={() => setMPlaying(null)}
+                          onEnded={() => setMPlaying(null)}
                         />
                       </div>
                     ))}
@@ -2013,5 +2488,155 @@ const st = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  lyricsToggle: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    padding: '8px 16px',
+    borderRadius: 12,
+    border: '1px solid rgba(255,255,255,0.1)',
+    cursor: 'pointer',
+    width: '100%',
+    textAlign: 'left',
+    transition: 'all 0.15s ease',
+  },
+  lyricsHint: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 11,
+    fontWeight: 500,
+    color: 'rgba(255,255,255,0.3)',
+    marginTop: 4,
+    paddingLeft: 4,
+  },
+  audioCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    padding: 20,
+    background: 'linear-gradient(135deg, rgba(167,139,250,0.1), rgba(78,205,196,0.1))',
+    borderRadius: 18,
+    border: '1px solid rgba(167,139,250,0.2)',
+    animation: 'artFadeIn 0.5s ease',
+  },
+  audioVisual: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 3,
+    height: 40,
+  },
+  audioBar: {
+    width: 4,
+    borderRadius: 2,
+    background: 'linear-gradient(0deg, #4ECDC4, #A78BFA)',
+    animation: 'artPulse 1.2s ease-in-out infinite',
+  },
+  audioPlayer: {
+    width: '100%',
+    maxWidth: 400,
+    height: 40,
+    borderRadius: 10,
+  },
+  genreBadge: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#A78BFA',
+    background: 'rgba(167,139,250,0.15)',
+    padding: '3px 10px',
+    borderRadius: 10,
+  },
+  genreBadgeSmall: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 10,
+    fontWeight: 700,
+    color: 'rgba(255,255,255,0.4)',
+    background: 'rgba(255,255,255,0.08)',
+    padding: '2px 6px',
+    borderRadius: 6,
+  },
+  musicGalItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    padding: '10px 12px',
+    background: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    border: '1px solid rgba(255,255,255,0.08)',
+  },
+  musicPlayBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    border: 'none',
+    background: 'rgba(167,139,250,0.2)',
+    color: '#A78BFA',
+    fontSize: 14,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  musicGalInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    minWidth: 0,
+  },
+  musicGalTitle: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    color: 'rgba(255,255,255,0.6)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  songNameInput: {
+    width: '100%',
+    padding: '10px 14px',
+    fontSize: 15,
+    fontFamily: "'Fredoka', sans-serif",
+    fontWeight: 700,
+    color: 'white',
+    background: 'rgba(255,255,255,0.08)',
+    border: '2px solid rgba(255,255,255,0.12)',
+    borderRadius: 14,
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  instrumentalToggle: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    padding: '10px 16px',
+    borderRadius: 14,
+    cursor: 'pointer',
+    width: '100%',
+    textAlign: 'center',
+    transition: 'all 0.15s ease',
+  },
+  audioCardSongName: {
+    fontFamily: "'Lilita One', cursive",
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+  },
+  galDownloadBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    border: 'none',
+    background: 'rgba(78,205,196,0.15)',
+    fontSize: 14,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
 };
