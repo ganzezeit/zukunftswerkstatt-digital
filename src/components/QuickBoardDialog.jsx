@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { ref, set, push, remove, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
+import { useProject } from '../contexts/ProjectContext';
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -122,6 +123,7 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
 }
 
 export default function QuickBoardDialog({ onClose, dayColor }) {
+  const { projectId } = useProject();
   const [mode, setMode] = useState('menu'); // 'menu' | 'create' | 'active' | 'saved-view'
   const [formTitle, setFormTitle] = useState('');
   const [colCount, setColCount] = useState(3);
@@ -153,7 +155,9 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
         try {
           const data = snap.val();
           if (data) {
-            const list = Object.entries(data).map(([key, val]) => ({ ...val, _key: key }));
+            const list = Object.entries(data)
+              .map(([key, val]) => ({ ...val, _key: key }))
+              .filter(item => item.projectId === projectId);
             list.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
             setSavedBoards(list);
           } else {
@@ -169,7 +173,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
     } catch (err) {
       console.error('[QuickBoard] Error setting up saved boards listener:', err);
     }
-  }, []);
+  }, [projectId]);
 
   // Update column names when count changes
   const handleColCountChange = (newCount) => {
@@ -205,6 +209,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
       columns: cols,
       active: true,
       createdAt: Date.now(),
+      projectId: projectId || null,
     })
       .then(() => {
         clearTimeout(timeout);
@@ -302,6 +307,7 @@ export default function QuickBoardDialog({ onClose, dayColor }) {
       }, {}),
       savedAt: Date.now(),
       boardCode: code,
+      projectId: projectId || null,
     }).catch(console.error);
   };
 

@@ -11,9 +11,13 @@ const DEFAULT_STATE = {
   volume: 0.3
 };
 
-export function loadState() {
+function getKey(projectId) {
+  return projectId ? `${STORAGE_KEY}-${projectId}` : STORAGE_KEY;
+}
+
+export function loadState(projectId) {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(getKey(projectId));
     if (saved) {
       return { ...DEFAULT_STATE, ...JSON.parse(saved) };
     }
@@ -23,15 +27,15 @@ export function loadState() {
   return { ...DEFAULT_STATE };
 }
 
-export function saveState(state) {
+export function saveState(state, projectId) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(getKey(projectId), JSON.stringify(state));
   } catch (e) {
     console.warn('Fehler beim Speichern:', e);
   }
 }
 
-export function resetState() {
-  localStorage.removeItem(STORAGE_KEY);
+export function resetState(projectId) {
+  localStorage.removeItem(getKey(projectId));
   return { ...DEFAULT_STATE };
 }

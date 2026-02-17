@@ -12,6 +12,7 @@ const ChatPage = lazy(() => import('./components/ChatPage'));
 const QuizPage = lazy(() => import('./components/QuizPage'));
 const EinzelquizPage = lazy(() => import('./components/EinzelquizPage'));
 const ArtRoomPage = lazy(() => import('./components/ArtRoomPage'));
+const ShortQuizRedirect = lazy(() => import('./components/ShortQuizRedirect'));
 const LoginScreen = lazy(() => import('./components/LoginScreen'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 
@@ -108,6 +109,14 @@ function Root() {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <ChatPage roomCode={chatMatch[1].toUpperCase()} />
+      </Suspense>
+    );
+  }
+  const shortQuizMatch = path.match(/^\/q\/([A-Za-z0-9]+)/);
+  if (shortQuizMatch) {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <ShortQuizRedirect code={shortQuizMatch[1].toUpperCase()} />
       </Suspense>
     );
   }

@@ -41,7 +41,12 @@ const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 const TRANSITION_MS = 400;
 
 export default function App() {
-  const [state, setState] = useState(() => loadState());
+  // Project context — className comes from selected project (must be before state init)
+  const { project, clearProject } = useProject();
+  const className = project?.className || null;
+  const projectId = project?.id || null;
+
+  const [state, setState] = useState(() => loadState(projectId));
   const [screen, setScreen] = useState('splash');
   const [selectedDay, setSelectedDay] = useState(null);
   const [viewingStepIndex, setViewingStepIndex] = useState(null);
@@ -58,10 +63,6 @@ export default function App() {
   const [freeEnergizer, setFreeEnergizer] = useState(false);
   const [freeEnergizerData, setFreeEnergizerData] = useState(null);
   const screenBeforeFreeEnergizer = useRef(null);
-
-  // Project context — className comes from selected project
-  const { project, clearProject } = useProject();
-  const className = project?.className || null;
   const isRemoteUpdateRef = useRef(false);
 
   // Save status tracking
@@ -148,7 +149,7 @@ export default function App() {
   }, [className, state]);
 
   // Persist on every state change (localStorage always as fallback)
-  useEffect(() => { saveState(state); }, [state]);
+  useEffect(() => { saveState(state, projectId); }, [state, projectId]);
   useEffect(() => { setVolume(state.volume); }, [state.volume]);
 
   // F4: Firebase sync — subscribe to class state (dynamic import: Firebase loads only when needed)
@@ -529,7 +530,7 @@ export default function App() {
   };
 
   const handleResetAll = () => {
-    const fresh = resetState();
+    const fresh = resetState(projectId);
     setState(fresh);
     setSelectedDay(null);
     setViewingStepIndex(null);

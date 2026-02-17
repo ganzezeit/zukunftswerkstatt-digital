@@ -3,8 +3,10 @@ import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import { playClickSound, playSuccessSound } from '../utils/audio';
+import { useProject } from '../contexts/ProjectContext';
 
 export default function EinzelquizStepCard({ step, dayColor, onComplete }) {
+  const { projectId } = useProject();
   const [matchingQuiz, setMatchingQuiz] = useState(null);
   const [matchingKey, setMatchingKey] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export default function EinzelquizStepCard({ step, dayColor, onComplete }) {
       const data = snap.val();
       setLoading(false);
       if (!data) { setMatchingQuiz(null); setMatchingKey(null); return; }
-      const entry = Object.entries(data).find(([, v]) => v.quizType === quizType);
+      const entry = Object.entries(data).find(([, v]) => v.quizType === quizType && v.projectId === projectId);
       if (entry) {
         setMatchingKey(entry[0]);
         setMatchingQuiz(entry[1]);
@@ -27,7 +29,7 @@ export default function EinzelquizStepCard({ step, dayColor, onComplete }) {
       }
     });
     return () => unsub();
-  }, [quizType]);
+  }, [quizType, projectId]);
 
   const quizUrl = matchingKey ? `${window.location.origin}/einzelquiz/${matchingKey}` : '';
 

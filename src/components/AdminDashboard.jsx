@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProject } from '../contexts/ProjectContext';
+import ProjectSettings from './ProjectSettings';
 
 function CreateProjectModal({ onClose, onCreate }) {
   const [name, setName] = useState('');
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
   const { projects, selectProject, createProject, deleteProject, loading } = useProject();
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [settingsTarget, setSettingsTarget] = useState(null);
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Lehrer';
 
@@ -131,6 +133,15 @@ export default function AdminDashboard() {
       return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch { return dateStr; }
   };
+
+  if (settingsTarget) {
+    return (
+      <ProjectSettings
+        project={settingsTarget}
+        onBack={() => setSettingsTarget(null)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -204,6 +215,13 @@ export default function AdminDashboard() {
                       style={styles.startButton}
                     >
                       Projekt starten
+                    </button>
+                    <button
+                      onClick={() => setSettingsTarget(proj)}
+                      style={styles.configButton}
+                      title="Projekt einrichten"
+                    >
+                      {'\u2699\uFE0F'}
                     </button>
                     <button
                       onClick={() => setDeleteTarget(proj)}
@@ -403,6 +421,18 @@ const styles = {
     fontWeight: 700,
     cursor: 'pointer',
     boxShadow: '0 4px 14px rgba(0, 180, 216, 0.25)',
+  },
+  configButton: {
+    width: 44,
+    height: 44,
+    border: '2px solid #E0D6CC',
+    borderRadius: 12,
+    background: '#fff',
+    fontSize: 18,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteButton: {
     width: 44,

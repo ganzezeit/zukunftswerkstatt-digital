@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ref, push, set, remove, onValue } from 'firebase/database';
 import { db } from '../firebase';
+import { useProject } from '../contexts/ProjectContext';
 import QuizCreator from './QuizCreator';
 import EinzelquizManager from './EinzelquizManager';
 import QuizRandomizer from './QuizRandomizer';
@@ -34,6 +35,7 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
 }
 
 export default function QuizDialog({ onClose, dayColor, className: klassenName }) {
+  const { projectId } = useProject();
   const [tab, setTab] = useState('live'); // 'live' | 'einzel'
   const [mode, setMode] = useState('menu'); // 'menu' | 'create' | 'edit' | 'session' | 'randomize'
   const [savedQuizzes, setSavedQuizzes] = useState([]);
@@ -50,7 +52,9 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
     const unsub = onValue(quizzesRef, (snap) => {
       const data = snap.val();
       if (data) {
-        const list = Object.entries(data).map(([key, val]) => ({ ...val, _key: key }));
+        const list = Object.entries(data)
+          .map(([key, val]) => ({ ...val, _key: key }))
+          .filter(item => item.projectId === projectId);
         list.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
         setSavedQuizzes(list);
       } else {
@@ -58,13 +62,14 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
       }
     });
     return () => unsub();
-  }, []);
+  }, [projectId]);
 
   const handleSaveNewQuiz = (quizData) => {
     push(ref(db, 'savedQuizzes'), {
       ...quizData,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      projectId: projectId || null,
     }).catch(console.error);
     setMode('menu');
   };
@@ -75,6 +80,7 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
       ...quizData,
       createdAt: editingQuiz.createdAt || Date.now(),
       updatedAt: Date.now(),
+      projectId: editingQuiz.projectId || projectId || null,
     }).catch(console.error);
     setEditingQuiz(null);
     setMode('menu');
@@ -174,6 +180,7 @@ export default function QuizDialog({ onClose, dayColor, className: klassenName }
                 questions: result.questions,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
+                projectId: projectId || null,
               }).catch(console.error);
               setMode('menu');
             }}
