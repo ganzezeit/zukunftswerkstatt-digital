@@ -5,6 +5,7 @@ import ProjectSettings from './ProjectSettings';
 import TemplateCards from './TemplateCards';
 
 const WochenberichtGenerator = lazy(() => import('./WochenberichtGenerator'));
+const CreatorApp = lazy(() => import('./creator/CreatorApp'));
 
 function CreateProjectWizard({ onClose, onCreate }) {
   const [step, setStep] = useState(1); // 1 = template, 2 = details
@@ -167,6 +168,8 @@ export default function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [settingsTarget, setSettingsTarget] = useState(null);
   const [wochenberichtTarget, setWochenberichtTarget] = useState(null);
+  const [showCreator, setShowCreator] = useState(false);
+  const [editTemplateId, setEditTemplateId] = useState(null);
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Lehrer';
 
@@ -181,6 +184,17 @@ export default function AdminDashboard() {
       return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch { return dateStr; }
   };
+
+  if (showCreator) {
+    return (
+      <Suspense fallback={<div style={styles.container}><div style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 20, color: '#8B5A2B' }}>Laden...</div></div>}>
+        <CreatorApp
+          onBack={() => { setShowCreator(false); setEditTemplateId(null); }}
+          templateId={editTemplateId}
+        />
+      </Suspense>
+    );
+  }
 
   if (settingsTarget) {
     return (
@@ -290,6 +304,25 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Workshop Creator */}
+        <div style={{ ...styles.section, marginTop: 32 }}>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>Workshop Creator</h2>
+          </div>
+          <div style={styles.creatorCard}>
+            <div style={styles.creatorInfo}>
+              <span style={{ fontSize: 32 }}>{'\u{1F527}'}</span>
+              <div>
+                <h3 style={styles.creatorTitle}>Eigenen Workshop erstellen</h3>
+                <p style={styles.creatorDesc}>Erstelle und bearbeite Workshop-Vorlagen mit dem visuellen Editor.</p>
+              </div>
+            </div>
+            <button onClick={() => setShowCreator(true)} style={styles.creatorBtn}>
+              {'\u{1F3A8}'} Workshop Creator
+            </button>
+          </div>
         </div>
       </div>
 
@@ -674,5 +707,47 @@ const styles = {
     cursor: 'pointer',
     textDecoration: 'underline',
     padding: 0,
+  },
+
+  // Workshop Creator
+  creatorCard: {
+    background: '#fff',
+    borderRadius: 20,
+    padding: '24px',
+    boxShadow: '0 4px 16px rgba(139, 90, 43, 0.08)',
+    border: '1px solid rgba(255, 166, 107, 0.12)',
+  },
+  creatorInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
+  },
+  creatorTitle: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 18,
+    fontWeight: 700,
+    color: '#333',
+    margin: 0,
+  },
+  creatorDesc: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    color: '#999',
+    margin: '4px 0 0',
+    fontWeight: 500,
+  },
+  creatorBtn: {
+    width: '100%',
+    padding: '14px',
+    border: 'none',
+    borderRadius: 14,
+    background: 'linear-gradient(135deg, #9B5DE5 0%, #B794F6 100%)',
+    color: '#fff',
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 4px 14px rgba(155, 93, 229, 0.3)',
   },
 };
