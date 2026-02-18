@@ -1,139 +1,117 @@
-# Mission: Weltverbinder
+# Zukunftswerkstatt Digital — Gamified Education Platform
 
-Gamified teacher screen app for Andersen Grundschule (Berlin Wedding) project week about children's rights (Kinderrechte). Projected on classroom whiteboard, NOT used on student devices. Target: immigrant children with limited German.
+## Project Context
+This is the development repo for Zukunftswerkstatt Digital. 
+Original app (Mission Weltverbinder) is a gamified project week app for schools in Berlin.
+This repo is the evolution toward a full modular education platform.
+The original production app is in a SEPARATE repo — do NOT break existing functionality.
 
 ## Quick Start
-
-```bash
-npm install
-npm run dev    # http://localhost:3000
 ```
+npm install && npm run dev → http://localhost:3000
+```
+
+## Tech Stack
+- React 18 + Vite (JavaScript, NO TypeScript yet)
+- Firebase Realtime Database (NOT Firestore)  
+- Firebase Storage (image uploads)
+- Inline styles (no CSS framework)
+- Netlify Functions (serverless API)
+- Replicate API (AI image/video/music generation)
+- Anthropic Claude API (translation + prompt enhancement)
+- pdfjs-dist (PDF slides), qrcode.react (QR codes)
 
 ## Architecture
+Single-page app, screen-based routing via state (no React Router).
+App.jsx = central state manager (830 lines).
+Firebase = shared state between devices (class-based sessions).
+localStorage = device-local persistence (energy, progress).
 
-### Core Concept
-Linear, map-based journey through 5 days (Tag 1–5). Each day has sequential steps. Complete step → next unlocks. Complete all steps → next day unlocks. Character moves between stops on the map.
+## Step Types (Mission Types)
+Top-level types in days.js steps:
+- activity — Text + timer + glossary tooltips
+- multi-step — Card sequence with sub-steps
+- kahoot — External URL (Kahoot quiz link)
+- meet — External URL (video call link)  
+- einzelquiz — Individual pre/post assessment
 
-Schedule: Tag 1=Mi 18.02 | Tag 2=Do 19.02 | Tag 3=Fr 20.02 | Tag 4=Mo 23.02 | Tag 5=Di 24.02
-(Dates not shown to students — app says "Tag 1" etc.)
+SubTypes (inside multi-step):
+- text — Text card with optional boardConfig
+- video — MP4 player (startTime/endTime)
+- slides — PDF slideshow (pdfjs-dist)
+- kahoot — Kahoot link as sub-step
+- landeskunde — Country info slides + quiz
+- lernkarten — Matching card game
 
-### Tech Stack
-- Vite + React 18 (inline styles, no CSS framework)
-- pdfjs-dist (PDF slides rendering)
-- localStorage (persistence)
-- Web Audio API (SFX)
-- CSS animations (no animation library)
+## Key Components
+| Component | Lines | Purpose |
+|-----------|-------|---------|
+| App.jsx | 830 | Central state, screen routing |
+| ArtStudio.jsx | 2642 | AI art/video/music generation |
+| ArtRoomPage.jsx | 1691 | Multi-device art studio (QR) |
+| QuizSession.jsx | 1582 | Live Kahoot-style quiz engine |
+| QuizPage.jsx | 1491 | Student quiz view |
+| BoardCreator.jsx | 1366 | Board configuration panel |
+| QuickBoardDialog.jsx | 1177 | Collaborative Padlet-style board |
+| ChatPage.jsx | 981 | Multilingual chat + real-time translation |
+| EinzelquizPage.jsx | 951 | Individual assessment |
+| BoardPage.jsx | 934 | Board student view |
+| QuizCreator.jsx | 505 | Quiz builder (reusable for Creator) |
+| EinzelquizCreator.jsx | 590 | Assessment builder (reusable) |
+| WeeklyReport.jsx | 594 | Weekly report generator |
 
-## Project Structure
-
+## Firebase Database Paths
 ```
-src/
-├── main.jsx                          # Entry point
-├── components/
-│   ├── App.jsx                       # Main state management & screen routing
-│   ├── SplashScreen.jsx              # Start screen — "Mission starten!" button
-│   ├── WochenplanScreen.jsx          # 5-day overview cards
-│   ├── ProjektregelnScreen.jsx       # 4 flip cards with project rules
-│   ├── EnergizerIchStimmeZu.jsx      # Fixed energizer with 10 statements
-│   ├── LernkartenGame.jsx            # Memory matching game (9 word pairs)
-│   ├── MapScreen.jsx                 # 5-day map with character + path
-│   ├── DayScreen.jsx                 # Vertical timeline of steps
-│   ├── DayIntroScreen.jsx            # Recap + energizer for Tag 2+
-│   ├── StepViewer.jsx                # Routes step to viewer by type
-│   ├── ActivityScreen.jsx            # Activity text + timer + glossary
-│   ├── SlideViewer.jsx               # PDF slideshow (pdfjs-dist)
-│   ├── VideoPlayer.jsx               # MP4 player with startTime/endTime
-│   ├── MultiStepViewer.jsx           # Sub-step cards with progress dots
-│   ├── LandeskundeViewer.jsx         # Tanzania slides + quiz (app-built)
-│   ├── EnergizerScreen.jsx           # Pick 3, timer, music
-│   ├── GlossaryTooltip.jsx           # Inline clickable term tooltips
-│   ├── EnergyBar.jsx                 # Animated energy bar
-│   ├── TopBar.jsx                    # Energy + volume + teacher trigger
-│   ├── TeacherPanel.jsx              # Hidden admin (triple-click logo)
-│   └── Confetti.jsx                  # Celebration particles
-├── data/
-│   ├── days.js                       # 5 days, all steps, full content
-│   ├── energizers.js                 # 16 energizer activities
-│   ├── glossary.js                   # 34 German terms + definitions
-│   ├── lernkarten.js                 # 9 word-definition pairs
-│   ├── landeskunde.js                # 10 Tanzania slides + 5 quiz questions
-│   └── projektregeln.js              # 4 project rules (flip cards)
-├── utils/
-│   ├── audio.js                      # Music + SFX (AudioContext)
-│   ├── persistence.js                # localStorage save/load/reset
-│   └── constants.js                  # Energy values, character emoji, etc.
-└── styles/
-    ├── global.css                    # Base styles, fonts, reset
-    └── animations.css                # All @keyframes + utility classes
+classes/{name}/state — Game progress (energy, completedSteps)
+classes/{name}/taskTimings — Step start/complete timestamps
+boards/{code} — Collaborative board posts
+boardLinks/{taskId} — taskId → board code mapping
+savedBoards/{id} — Persistent board data
+sessions/{id} — Live quiz sessions
+savedQuizzes/{id} — Saved quiz templates
+quizResults/{id} — Quiz results
+einzelquizzes/{id} — Individual quiz data
+einzelquizResults/{class}/{type} — Assessment results
+chatRooms/{id} — Chat messages
+artRooms/{code} — AI art gallery
 ```
 
-## Screen Flow
+## Template Structure (days.js)
+The core data model. Each day has steps, each step has a type and content.
+This is what the Workshop Creator will generate via UI.
+See src/data/days.js for the full structure.
 
+Key schema:
 ```
-First launch:
-  splash → wochenplan → projektregeln → ichStimmeZu → lernkarten → map
-
-Subsequent launches (introCompleted=true):
-  splash → map
-
-Map navigation:
-  map → dayIntro (Tag 2+ first visit) → day → step
-  day ↔ energizer (when energy < 40%)
-  day → map (back button)
+Day: { id, name, sub, emoji, color, iconImage, dayIntro?, steps[] }
+Step: { id, title, icon, type, energyCost, desc?, content }
+SubStep: { title, subType, text?, content?, boardConfig? }
+BoardConfig: { taskId?, referenceTaskId?, title, columns?, mode?, buttonLabel }
 ```
 
-## Step Types
+## Netlify Functions (API)
+- generate-image — Claude API (prompt enhancement) + Replicate (generation)
+- generate-video — Claude API + Replicate
+- generate-music — Replicate
+- poll-image — Replicate async polling
+- translate — Claude API translation (DE↔EN↔SW↔TR↔FR↔AR)
 
-| Type        | Component         | Behavior                                         |
-|-------------|-------------------|--------------------------------------------------|
-| `activity`  | ActivityScreen    | Text + bullets + optional timer + glossary        |
-| `slides`    | SlideViewer       | PDF via pdfjs-dist, arrow/keyboard nav            |
-| `video`     | VideoPlayer       | HTML5 video with startTime/endTime support        |
-| `multi-step`| MultiStepViewer   | Sub-cards with Weiter button, progress dots       |
-| `kahoot`    | ExternalLink      | Opens URL in new tab, "Zurück" overlay            |
-| `meet`      | ExternalLink      | Opens URL in new tab, "Zurück" overlay            |
+## Env Vars
+- CLAUDE_API_KEY — Anthropic API
+- REPLICATE_API_KEY — Replicate API
 
-MultiStepViewer sub-steps can have `subType: "landeskunde"` or `subType: "quiz"` to render LandeskundeViewer.
+## Current Development Focus
+Building the Workshop Creator — a no-code editor that lets non-programmers 
+create gamified workshops using the existing step types.
 
-## Energy System
-- Start: 100, Max: 100
-- Each step costs `energyCost` (5–20)
-- Below 40%: force energizer before next step
-- Energizer restores 30–40 energy (random)
-- Display: TopBar animated gradient bar
+Phase 1: Template Schema formalization (JSON Schema from days.js structure)
+Phase 2: Dynamic template loading (Firebase instead of hardcoded days.js)
+Phase 3: Creator MVP (visual editor reusing QuizCreator, BoardCreator, etc.)
 
-## State (localStorage)
-```
-currentDay, energy, completedSteps, completedDays,
-usedEnergizers, introCompleted, dayIntroSeen, volume
-```
-
-## Visual Design
-- WARM theme (coral/blue gradients), NOT dark/space
-- White/cream cards, soft shadows, 16px+ border-radius
-- Fonts: Fredoka (body), Lilita One (headings), Baloo 2 (numbers)
-- Large text for whiteboard projection (body 18px+, headings 28px+)
-- Day accent colors: Tag1=#FF6B35, Tag2=#00B4D8, Tag3=#9B5DE5, Tag4=#00F5D4, Tag5=#FFD166
-
-## Teacher Panel
-Triple-click logo in TopBar. Actions: go back step, reset day, +30 energy, jump to any day.
-
-## Adding Content
-
-**Days/Steps**: Edit `src/data/days.js`
-**Slides**: Add PDF to `public/slides/`, reference in step content
-**Videos**: Add MP4 to `public/videos/`, reference in step content (supports startTime/endTime)
-**Landeskunde**: Edit `src/data/landeskunde.js`, images in `public/images/landeskunde/`
-**Energizers**: Edit `src/data/energizers.js`
-**Glossary**: Edit `src/data/glossary.js` — terms auto-highlighted in ActivityScreen
-
-## Media Files (user adds later)
-```
-public/menu-music.mp3
-public/energizer-music.mp3
-public/videos/kinderrechte.mp4
-public/slides/tag1-rechte.pdf
-public/slides/tag1-lebenswelt.pdf
-public/images/landeskunde/lk-01-*.png through lk-10-*.png
-```
-Missing files show friendly "Datei wird noch hinzugefügt..." placeholder.
+## Rules
+- Do NOT break existing app functionality
+- Match existing code style (inline styles, functional components)
+- German for domain terms (Projektwoche, Energizer, Einzelquiz)
+- English for technical terms (state, handler, component)
+- Minimal new dependencies — ask before adding npm packages
+- All new features must work on tablets (mobile-first)
