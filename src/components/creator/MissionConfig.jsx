@@ -3,6 +3,7 @@ import { MISSION_TYPE_CONFIG } from '../../schema/templateSchema';
 import ArtStudioConfig from './ArtStudioConfig';
 import VideoConfig from './VideoConfig';
 import SlidesConfig from './SlidesConfig';
+import IconGenerator from './IconGenerator';
 
 const ICON_OPTIONS = [
   '\u{1F4DD}', '\u{1F4CA}', '\u{1F4FA}', '\u{1F4CB}', '\u{1F3AF}',
@@ -40,6 +41,7 @@ function setNestedValue(obj, path, value) {
 }
 
 export default function MissionConfig({ mission, missionIdx, onUpdate, onClose }) {
+  const [showIconGen, setShowIconGen] = useState(false);
   const typeConfig = MISSION_TYPE_CONFIG.steps[mission.type];
   const uiFields = typeConfig?.uiFields || [];
 
@@ -77,19 +79,28 @@ export default function MissionConfig({ mission, missionIdx, onUpdate, onClose }
           />
 
           <label style={s.label}>Icon</label>
+          {mission.iconImage && (
+            <div style={s.iconImagePreview}>
+              <img src={mission.iconImage} alt="Icon" style={s.iconImageImg} />
+              <button onClick={() => handleTopChange('iconImage', null)} style={s.iconImageClear}>{'\u2715'}</button>
+            </div>
+          )}
           <div style={s.iconGrid}>
             {ICON_OPTIONS.map(ic => (
               <button
                 key={ic}
-                onClick={() => handleTopChange('icon', ic)}
+                onClick={() => { handleTopChange('icon', ic); handleTopChange('iconImage', null); }}
                 style={{
                   ...s.iconBtn,
-                  outline: mission.icon === ic ? '2px solid #FF6B35' : 'none',
+                  outline: !mission.iconImage && mission.icon === ic ? '2px solid #FF6B35' : 'none',
                 }}
               >
                 {ic}
               </button>
             ))}
+            <button onClick={() => setShowIconGen(true)} style={s.aiIconBtn} title="KI-Icon generieren">
+              {'\u{1F3A8}'}
+            </button>
           </div>
 
           <label style={s.label}>Energiekosten</label>
@@ -153,6 +164,13 @@ export default function MissionConfig({ mission, missionIdx, onUpdate, onClose }
           <button onClick={onClose} style={s.doneBtn}>Fertig</button>
         </div>
       </div>
+
+      {showIconGen && (
+        <IconGenerator
+          onSelect={(url) => { handleTopChange('iconImage', url); setShowIconGen(false); }}
+          onClose={() => setShowIconGen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -576,6 +594,23 @@ const s = {
   iconBtn: {
     width: 34, height: 34, border: 'none', borderRadius: 8,
     background: '#F5F5F5', fontSize: 18, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  aiIconBtn: {
+    width: 34, height: 34, border: '2px dashed #FF6B35', borderRadius: 8,
+    background: '#FFF3E0', fontSize: 16, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  iconImagePreview: {
+    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+    padding: '6px 8px', background: '#F5F5F5', borderRadius: 10,
+  },
+  iconImageImg: {
+    width: 40, height: 40, borderRadius: 8, objectFit: 'cover',
+  },
+  iconImageClear: {
+    width: 24, height: 24, border: 'none', borderRadius: 6,
+    background: '#FFCDD2', fontSize: 11, cursor: 'pointer', color: '#D32F2F',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   sliderRow: { display: 'flex', alignItems: 'center', gap: 10 },

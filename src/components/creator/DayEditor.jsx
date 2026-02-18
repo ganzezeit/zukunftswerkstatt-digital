@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import IconGenerator from './IconGenerator';
 
 const EMOJI_OPTIONS = [
   '\u{1F4D6}', '\u{1F30D}', '\u{1F3AE}', '\u{1F6E0}\uFE0F', '\u{1F389}',
@@ -14,6 +15,7 @@ const COLOR_OPTIONS = [
 
 export default function DayEditor({ days, selectedDayIdx, onSelectDay, onAddDay, onDeleteDay, onUpdateDay, onReorderDays }) {
   const [editingDay, setEditingDay] = useState(null); // index of day being edited
+  const [showIconGen, setShowIconGen] = useState(false);
   const dragRef = useRef(null);
 
   const handleDragStart = (e, idx) => {
@@ -55,7 +57,11 @@ export default function DayEditor({ days, selectedDayIdx, onSelectDay, onAddDay,
               background: i === selectedDayIdx ? '#fff' : '#FAFAFA',
             }}
           >
-            <span style={s.tabEmoji}>{d.emoji}</span>
+            {d.iconImage ? (
+              <img src={d.iconImage} alt="" style={s.tabIconImg} />
+            ) : (
+              <span style={s.tabEmoji}>{d.emoji}</span>
+            )}
             <span style={s.tabName}>{d.name}</span>
             {d.sub && <span style={s.tabSub}>{d.sub}</span>}
           </div>
@@ -84,17 +90,26 @@ export default function DayEditor({ days, selectedDayIdx, onSelectDay, onAddDay,
               style={s.input}
             />
 
-            <label style={s.label}>Emoji</label>
+            <label style={s.label}>Icon</label>
+            {day.iconImage && (
+              <div style={s.iconImagePreview}>
+                <img src={day.iconImage} alt="Icon" style={s.iconImageImg} />
+                <button onClick={() => onUpdateDay(editingDay, { iconImage: null })} style={s.iconImageClear}>{'\u2715'}</button>
+              </div>
+            )}
             <div style={s.emojiGrid}>
               {EMOJI_OPTIONS.map(em => (
                 <button
                   key={em}
-                  onClick={() => onUpdateDay(editingDay, { emoji: em })}
-                  style={{ ...s.emojiBtn, outline: day.emoji === em ? '3px solid #FF6B35' : 'none' }}
+                  onClick={() => { onUpdateDay(editingDay, { emoji: em, iconImage: null }); }}
+                  style={{ ...s.emojiBtn, outline: !day.iconImage && day.emoji === em ? '3px solid #FF6B35' : 'none' }}
                 >
                   {em}
                 </button>
               ))}
+              <button onClick={() => setShowIconGen(true)} style={s.aiIconBtn} title="KI-Icon generieren">
+                {'\u{1F3A8}'}
+              </button>
             </div>
 
             <label style={s.label}>Farbe</label>
@@ -126,6 +141,16 @@ export default function DayEditor({ days, selectedDayIdx, onSelectDay, onAddDay,
             </div>
           </div>
         </div>
+      )}
+
+      {showIconGen && (
+        <IconGenerator
+          onSelect={(url) => {
+            if (editingDay !== null) onUpdateDay(editingDay, { iconImage: url });
+            setShowIconGen(false);
+          }}
+          onClose={() => setShowIconGen(false)}
+        />
       )}
     </div>
   );
@@ -180,10 +205,30 @@ const s = {
     width: '100%', padding: '10px 14px', border: '2px solid #E0D6CC', borderRadius: 12,
     fontFamily: "'Fredoka', sans-serif", fontSize: 15, color: '#333', outline: 'none', boxSizing: 'border-box',
   },
+  tabIconImg: {
+    width: 24, height: 24, borderRadius: 6, objectFit: 'cover',
+  },
   emojiGrid: { display: 'flex', flexWrap: 'wrap', gap: 4 },
   emojiBtn: {
     width: 38, height: 38, border: 'none', borderRadius: 10,
     background: '#F5F5F5', fontSize: 20, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  aiIconBtn: {
+    width: 38, height: 38, border: '2px dashed #FF6B35', borderRadius: 10,
+    background: '#FFF3E0', fontSize: 17, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  iconImagePreview: {
+    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+    padding: '6px 8px', background: '#F5F5F5', borderRadius: 10,
+  },
+  iconImageImg: {
+    width: 40, height: 40, borderRadius: 8, objectFit: 'cover',
+  },
+  iconImageClear: {
+    width: 24, height: 24, border: 'none', borderRadius: 6,
+    background: '#FFCDD2', fontSize: 11, cursor: 'pointer', color: '#D32F2F',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   colorGrid: { display: 'flex', flexWrap: 'wrap', gap: 6 },

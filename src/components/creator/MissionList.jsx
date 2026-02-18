@@ -79,7 +79,11 @@ export default function MissionList({ missions, dayColor, onEdit, onDelete, onRe
           >
             <div style={s.dragHandle} title="Ziehen zum Sortieren">{'\u2630'}</div>
             <div style={{ ...s.iconBox, background: (meta.color || dayColor) + '18' }}>
-              <span style={{ fontSize: 20 }}>{m.icon || meta.icon}</span>
+              {m.iconImage ? (
+                <img src={m.iconImage} alt="" style={s.iconImg} />
+              ) : (
+                <span style={{ fontSize: 20 }}>{m.icon || meta.icon}</span>
+              )}
             </div>
             <div style={s.cardInfo}>
               <span style={s.cardTitle}>{m.title}</span>
@@ -155,6 +159,10 @@ const s = {
   iconBox: {
     width: 40, height: 40, borderRadius: 12,
     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    overflow: 'hidden',
+  },
+  iconImg: {
+    width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10,
   },
   cardInfo: { flex: 1, minWidth: 0 },
   cardTitle: {

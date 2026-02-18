@@ -354,7 +354,7 @@ export const DAY_SCHEMA = {
 export const STEP_SCHEMA = {
   description: 'A single step within a day',
   required: ['id', 'title', 'icon', 'type', 'content'],
-  optional: ['energyCost', 'desc'],
+  optional: ['energyCost', 'desc', 'iconImage'],
   fields: {
     id:         { type: 'string', description: 'Unique step ID (e.g. "t1-1")' },
     title:      { type: 'string', description: 'Step title shown in timeline' },
@@ -362,6 +362,7 @@ export const STEP_SCHEMA = {
     type:       { type: 'string', enum: Object.keys(STEP_TYPES), description: 'Step type' },
     energyCost: { type: 'number', description: 'Energy consumed (default: 5, triggers timer if >= 10)' },
     desc:       { type: 'string', description: 'Optional description shown in day timeline' },
+    iconImage:  { type: 'string', description: 'AI-generated icon image URL (alternative to emoji icon)' },
     content:    { type: 'object', description: 'Type-specific content (see STEP_TYPES)' },
   },
 };
