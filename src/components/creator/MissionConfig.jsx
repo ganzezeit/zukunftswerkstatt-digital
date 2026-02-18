@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MISSION_TYPE_CONFIG } from '../../schema/templateSchema';
+import ArtStudioConfig from './ArtStudioConfig';
 
 const ICON_OPTIONS = [
   '\u{1F4DD}', '\u{1F4CA}', '\u{1F4FA}', '\u{1F4CB}', '\u{1F3AF}',
@@ -117,6 +118,11 @@ export default function MissionConfig({ mission, missionIdx, onUpdate, onClose }
             <SubStepEditor
               subSteps={mission.content?.subSteps || []}
               onChange={(subSteps) => handleFieldChange('content.subSteps', subSteps)}
+            />
+          ) : mission.type === 'art-studio' ? (
+            <ArtStudioConfig
+              content={mission.content || {}}
+              onChange={(content) => onUpdate({ content })}
             />
           ) : (
             uiFields.map(field => (

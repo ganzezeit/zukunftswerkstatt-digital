@@ -109,6 +109,23 @@ export const STEP_TYPES = {
       description:         { type: 'string', description: 'Description shown on the step card' },
     },
   },
+
+  'art-studio': {
+    label: 'KI-Kunststudio',
+    description: 'AI creative studio for generating images, videos, and music',
+    component: 'ArtStudio',
+    required: [],
+    optional: ['enabledModes', 'allowedStyles', 'promptTemplate', 'contentFilter', 'galleryEnabled', 'multiDevice', 'maxGenerations'],
+    contentSchema: {
+      enabledModes:     { type: 'array',   items: 'string', description: 'Allowed creation modes: "image", "video", "music" (default: all)' },
+      allowedStyles:    { type: 'array',   items: 'string', description: 'Allowed image styles (default: all 10 styles)' },
+      promptTemplate:   { type: 'string',  description: 'Starter prompt hint shown to students' },
+      contentFilter:    { type: 'boolean', description: 'Enable content safety filter (default: true)' },
+      galleryEnabled:   { type: 'boolean', description: 'Show shared gallery (default: true)' },
+      multiDevice:      { type: 'boolean', description: 'Allow QR code for student devices (default: true)' },
+      maxGenerations:   { type: 'number',  description: 'Max generations per student (default: 3)' },
+    },
+  },
 };
 
 // ─── SUB-STEP TYPES ─────────────────────────────────────────────────────────────
@@ -463,6 +480,12 @@ export const MISSION_TYPE_CONFIG = {
         { key: 'content.supportedLanguages', label: 'Sprachen', type: 'string-list', required: false },
         { key: 'content.description', label: 'Beschreibung', type: 'textarea', required: false },
       ],
+    },
+    'art-studio': {
+      label: 'KI-Kunststudio',
+      icon: '\u{1F3A8}',
+      color: '#FF5722',
+      uiFields: [], // handled by custom ArtStudioConfig component
     },
   },
 

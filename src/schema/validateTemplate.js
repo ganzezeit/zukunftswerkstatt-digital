@@ -244,6 +244,26 @@ function validateStepContent(step, path, errors) {
       }
       break;
     }
+    case 'art-studio': {
+      if (content.enabledModes !== undefined) {
+        pushIf(errors, !isArray(content.enabledModes), `${path}.content.enabledModes: must be an array`);
+        if (isArray(content.enabledModes)) {
+          content.enabledModes.forEach((m, i) => pushIf(errors, !['image', 'video', 'music'].includes(m), `${path}.content.enabledModes[${i}]: must be "image", "video", or "music"`));
+        }
+      }
+      if (content.allowedStyles !== undefined) {
+        pushIf(errors, !isArray(content.allowedStyles), `${path}.content.allowedStyles: must be an array`);
+        if (isArray(content.allowedStyles)) {
+          content.allowedStyles.forEach((s, i) => pushIf(errors, !isString(s), `${path}.content.allowedStyles[${i}]: must be a string`));
+        }
+      }
+      if (content.promptTemplate !== undefined) pushIf(errors, !isString(content.promptTemplate), `${path}.content.promptTemplate: must be a string`);
+      if (content.contentFilter !== undefined) pushIf(errors, !isBoolean(content.contentFilter), `${path}.content.contentFilter: must be a boolean`);
+      if (content.galleryEnabled !== undefined) pushIf(errors, !isBoolean(content.galleryEnabled), `${path}.content.galleryEnabled: must be a boolean`);
+      if (content.multiDevice !== undefined) pushIf(errors, !isBoolean(content.multiDevice), `${path}.content.multiDevice: must be a boolean`);
+      if (content.maxGenerations !== undefined) pushIf(errors, !isNumber(content.maxGenerations) || content.maxGenerations < 1, `${path}.content.maxGenerations: must be a positive number`);
+      break;
+    }
   }
 }
 

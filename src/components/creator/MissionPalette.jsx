@@ -83,6 +83,31 @@ const PALETTE_CATEGORIES = [
       },
     ],
   },
+  {
+    label: 'Kreativ',
+    icon: '\u{1F3A8}',
+    items: [
+      {
+        type: 'art-studio',
+        label: 'KI-Kunststudio',
+        icon: '\u{1F3A8}',
+        desc: 'Bilder, Videos und Musik mit KI',
+        color: '#FF5722',
+        defaultContent: {
+          title: 'KI-Kunststudio',
+          content: {
+            enabledModes: ['image', 'video', 'music'],
+            allowedStyles: ['illustration', 'photo', 'cartoon', 'watercolor', 'pixel', '3d', 'anime', 'oil', 'comic', 'sketch'],
+            promptTemplate: '',
+            contentFilter: true,
+            galleryEnabled: true,
+            multiDevice: true,
+            maxGenerations: 3,
+          },
+        },
+      },
+    ],
+  },
 ];
 
 export default function MissionPalette({ onAdd }) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import ActivityScreen from './ActivityScreen';
 import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
@@ -7,6 +7,8 @@ import EinzelquizStepCard from './EinzelquizStepCard';
 import ChatManager from './ChatManager';
 import GlossaryTooltip from './GlossaryTooltip';
 import { playClickSound, playSuccessSound } from '../utils/audio';
+
+const ArtStudio = lazy(() => import('./ArtStudio'));
 
 export default function StepViewer({ step, dayColor, onComplete, onBack }) {
   // Music pause/resume is now handled by individual fullscreen viewers
@@ -27,6 +29,12 @@ export default function StepViewer({ step, dayColor, onComplete, onBack }) {
       return <ExternalLink step={step} dayColor={dayColor} onComplete={onComplete} type="meet" />;
     case 'videochat':
       return <ChatManager onClose={onComplete} dayColor={dayColor} />;
+    case 'art-studio':
+      return (
+        <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: "'Fredoka', sans-serif", fontSize: 20, color: '#999' }}>Lade KI-Kunststudio...</div>}>
+          <ArtStudio onClose={onComplete} initialMode="studio" />
+        </Suspense>
+      );
     case 'activity':
     default:
       return <ActivityScreen step={step} dayColor={dayColor} onComplete={onComplete} />;
