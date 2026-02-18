@@ -175,8 +175,12 @@ function ChecklistItem({ label, quiz, color, onQuickCreate }) {
 
 const s = {
   container: {
-    width: '100%',
-    minHeight: '100vh',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflowY: 'auto',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',

@@ -67,7 +67,7 @@ export function ProjectProvider({ children }) {
     try { localStorage.removeItem(PROJECT_STORAGE_KEY); } catch {}
   }, []);
 
-  const createProject = useCallback(async ({ name, className, studentCount, startDate }) => {
+  const createProject = useCallback(async ({ name, className, studentCount, startDate, templateId }) => {
     if (!user) return null;
     const projectsRef = ref(db, `users/${user.uid}/projects`);
     const newRef = push(projectsRef);
@@ -76,6 +76,7 @@ export function ProjectProvider({ children }) {
       className: className || '',
       studentCount: studentCount || 0,
       startDate: startDate || '',
+      templateId: templateId || null,
       status: 'active',
       createdAt: Date.now(),
     };

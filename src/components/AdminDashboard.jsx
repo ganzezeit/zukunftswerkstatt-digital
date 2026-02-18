@@ -2,15 +2,24 @@ import React, { useState, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProject } from '../contexts/ProjectContext';
 import ProjectSettings from './ProjectSettings';
+import TemplateCards from './TemplateCards';
 
 const WochenberichtGenerator = lazy(() => import('./WochenberichtGenerator'));
 
-function CreateProjectModal({ onClose, onCreate }) {
+function CreateProjectWizard({ onClose, onCreate }) {
+  const [step, setStep] = useState(1); // 1 = template, 2 = details
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [name, setName] = useState('');
   const [className, setClassName] = useState('');
   const [studentCount, setStudentCount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    setName(template.title || '');
+    setStep(2);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +31,7 @@ function CreateProjectModal({ onClose, onCreate }) {
         className: className.trim(),
         studentCount: parseInt(studentCount) || 0,
         startDate,
+        templateId: selectedTemplate?.id || null,
       });
       onClose();
     } catch {
@@ -31,53 +41,88 @@ function CreateProjectModal({ onClose, onCreate }) {
 
   return (
     <div style={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={styles.modal}>
-        <h3 style={styles.modalTitle}>Neues Projekt erstellen</h3>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>Projektname *</label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="z.B. Kinderrechte Woche"
-            style={styles.input}
-            autoFocus
-          />
-          <label style={styles.label}>Klasse *</label>
-          <input
-            value={className}
-            onChange={(e) => setClassName(e.target.value)}
-            placeholder="z.B. 6a"
-            style={styles.input}
-          />
-          <label style={styles.label}>Anzahl Kinder</label>
-          <input
-            type="number"
-            value={studentCount}
-            onChange={(e) => setStudentCount(e.target.value)}
-            placeholder="z.B. 25"
-            style={styles.input}
-            min="0"
-          />
-          <label style={styles.label}>Startdatum</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            style={styles.input}
-          />
-          <div style={styles.modalActions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
+      <div style={{ ...styles.modal, maxWidth: step === 1 ? 560 : 440 }}>
+        {/* Step indicator */}
+        <div style={styles.wizardSteps}>
+          <div style={{ ...styles.wizardDot, background: '#FF6B35' }} />
+          <div style={{ ...styles.wizardLine, background: step >= 2 ? '#FF6B35' : '#E0D6CC' }} />
+          <div style={{ ...styles.wizardDot, background: step >= 2 ? '#FF6B35' : '#E0D6CC' }} />
+        </div>
+
+        {step === 1 && (
+          <>
+            <h3 style={styles.modalTitle}>Vorlage auswaehlen</h3>
+            <p style={styles.wizardHint}>Waehle eine Workshop-Vorlage fuer dein Projekt</p>
+            <div style={styles.templateScrollArea}>
+              <TemplateCards onSelect={handleTemplateSelect} />
+            </div>
+            <button onClick={onClose} style={{ ...styles.cancelButton, marginTop: 16, width: '100%' }}>
               Abbrechen
             </button>
-            <button
-              type="submit"
-              style={{ ...styles.submitButton, opacity: saving ? 0.7 : 1 }}
-              disabled={saving || !name.trim() || !className.trim()}
-            >
-              {saving ? 'Wird erstellt...' : 'Erstellen'}
-            </button>
-          </div>
-        </form>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <h3 style={styles.modalTitle}>Projekt einrichten</h3>
+            {selectedTemplate && (
+              <div style={styles.selectedTemplateBadge}>
+                {'\u{1F4CB}'} {selectedTemplate.title}
+                <button
+                  onClick={() => setStep(1)}
+                  style={styles.changeTemplateBtn}
+                >
+                  Aendern
+                </button>
+              </div>
+            )}
+            <form onSubmit={handleSubmit} style={styles.form}>
+              <label style={styles.label}>Projektname *</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="z.B. Kinderrechte Woche"
+                style={styles.input}
+                autoFocus
+              />
+              <label style={styles.label}>Klasse *</label>
+              <input
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
+                placeholder="z.B. 6a"
+                style={styles.input}
+              />
+              <label style={styles.label}>Anzahl Kinder</label>
+              <input
+                type="number"
+                value={studentCount}
+                onChange={(e) => setStudentCount(e.target.value)}
+                placeholder="z.B. 25"
+                style={styles.input}
+                min="0"
+              />
+              <label style={styles.label}>Startdatum</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={styles.input}
+              />
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setStep(1)} style={styles.cancelButton}>
+                  Zurueck
+                </button>
+                <button
+                  type="submit"
+                  style={{ ...styles.submitButton, opacity: saving ? 0.7 : 1 }}
+                  disabled={saving || !name.trim() || !className.trim()}
+                >
+                  {saving ? 'Wird erstellt...' : 'Erstellen'}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
@@ -249,7 +294,7 @@ export default function AdminDashboard() {
       </div>
 
       {showCreate && (
-        <CreateProjectModal
+        <CreateProjectWizard
           onClose={() => setShowCreate(false)}
           onCreate={createProject}
         />
@@ -280,8 +325,12 @@ export default function AdminDashboard() {
 
 const styles = {
   container: {
-    width: '100%',
-    minHeight: '100vh',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflowY: 'auto',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
@@ -565,5 +614,65 @@ const styles = {
     color: '#555',
     lineHeight: 1.5,
     marginBottom: 0,
+  },
+
+  // Wizard styles
+  wizardSteps: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 0,
+    marginBottom: 16,
+  },
+  wizardDot: {
+    width: 12,
+    height: 12,
+    borderRadius: '50%',
+    transition: 'background 0.3s',
+  },
+  wizardLine: {
+    width: 40,
+    height: 3,
+    borderRadius: 2,
+    transition: 'background 0.3s',
+  },
+  wizardHint: {
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    margin: '0 0 16px',
+    fontWeight: 500,
+  },
+  templateScrollArea: {
+    maxHeight: '50vh',
+    overflowY: 'auto',
+    margin: '0 -8px',
+    padding: '0 8px',
+  },
+  selectedTemplateBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: '8px 14px',
+    background: '#FFF3E0',
+    borderRadius: 10,
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#E65100',
+    marginBottom: 16,
+  },
+  changeTemplateBtn: {
+    border: 'none',
+    background: 'none',
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#1565C0',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: 0,
   },
 };
