@@ -204,12 +204,20 @@ function validateStepContent(step, path, errors) {
     case 'slides': {
       pushIf(errors, !content.slides || !isString(content.slides), `${path}.content.slides: required string`);
       pushIf(errors, !content.slideCount || !isNumber(content.slideCount) || content.slideCount < 1, `${path}.content.slideCount: required positive number`);
+      if (content.autoAdvance !== undefined) pushIf(errors, !isBoolean(content.autoAdvance), `${path}.content.autoAdvance: must be a boolean`);
+      if (content.timerPerSlide !== undefined) pushIf(errors, !isNumber(content.timerPerSlide) || content.timerPerSlide < 1, `${path}.content.timerPerSlide: must be a positive number`);
+      if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
     }
     case 'video': {
-      pushIf(errors, !content.src || !isString(content.src), `${path}.content.src: required string`);
+      if (!content.src && !content.url) {
+        errors.push(`${path}.content: requires either src (file) or url (YouTube/Vimeo)`);
+      }
+      if (content.src !== undefined) pushIf(errors, !isString(content.src), `${path}.content.src: must be a string`);
+      if (content.url !== undefined) pushIf(errors, !isString(content.url), `${path}.content.url: must be a string`);
       if (content.startTime !== undefined) pushIf(errors, !isNumber(content.startTime), `${path}.content.startTime: must be a number`);
       if (content.endTime !== undefined && content.endTime !== null) pushIf(errors, !isNumber(content.endTime), `${path}.content.endTime: must be a number or null`);
+      if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
     }
     case 'multi-step': {

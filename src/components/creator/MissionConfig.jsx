@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { MISSION_TYPE_CONFIG } from '../../schema/templateSchema';
 import ArtStudioConfig from './ArtStudioConfig';
+import VideoConfig from './VideoConfig';
+import SlidesConfig from './SlidesConfig';
 
 const ICON_OPTIONS = [
   '\u{1F4DD}', '\u{1F4CA}', '\u{1F4FA}', '\u{1F4CB}', '\u{1F3AF}',
@@ -124,6 +126,16 @@ export default function MissionConfig({ mission, missionIdx, onUpdate, onClose }
               content={mission.content || {}}
               onChange={(content) => onUpdate({ content })}
             />
+          ) : mission.type === 'video' ? (
+            <VideoConfig
+              content={mission.content || {}}
+              onChange={(content) => onUpdate({ content })}
+            />
+          ) : mission.type === 'slides' ? (
+            <SlidesConfig
+              content={mission.content || {}}
+              onChange={(content) => onUpdate({ content })}
+            />
           ) : (
             uiFields.map(field => (
               <FieldRenderer
@@ -226,21 +238,32 @@ function SubStepEditor({ subSteps, onChange }) {
             ))}
           </select>
 
-          {subConfig.uiFields
-            .filter(f => f.key !== 'title') // already shown above
-            .map(field => (
-              <FieldRenderer
-                key={field.key}
-                field={field}
-                value={getNestedValue(editingSub, field.key)}
-                mission={editingSub}
-                onChange={(val) => {
-                  const updated = setNestedValue(editingSub, field.key, val);
-                  updateSubStep(editingIdx, updated);
-                }}
-              />
-            ))
-          }
+          {editingSub.subType === 'video' ? (
+            <VideoConfig
+              content={editingSub.content || {}}
+              onChange={(content) => updateSubStep(editingIdx, { content })}
+            />
+          ) : editingSub.subType === 'slides' ? (
+            <SlidesConfig
+              content={editingSub.content || {}}
+              onChange={(content) => updateSubStep(editingIdx, { content })}
+            />
+          ) : (
+            subConfig.uiFields
+              .filter(f => f.key !== 'title') // already shown above
+              .map(field => (
+                <FieldRenderer
+                  key={field.key}
+                  field={field}
+                  value={getNestedValue(editingSub, field.key)}
+                  mission={editingSub}
+                  onChange={(val) => {
+                    const updated = setNestedValue(editingSub, field.key, val);
+                    updateSubStep(editingIdx, updated);
+                  }}
+                />
+              ))
+          )}
         </div>
       )}
     </div>

@@ -24,26 +24,31 @@ export const STEP_TYPES = {
 
   slides: {
     label: 'Präsentation',
-    description: 'PDF slideshow rendered via pdfjs-dist',
+    description: 'PDF slideshow rendered via pdfjs-dist with optional auto-advance',
     component: 'SlideViewer',
     required: ['slides', 'slideCount'],
-    optional: [],
+    optional: ['autoAdvance', 'timerPerSlide', 'description'],
     contentSchema: {
-      slides:     { type: 'string', description: 'PDF filename (e.g. "tag1-rechte.pdf")' },
-      slideCount: { type: 'number', description: 'Total number of pages in the PDF' },
+      slides:        { type: 'string',  description: 'PDF filename (e.g. "tag1-rechte.pdf")' },
+      slideCount:    { type: 'number',  description: 'Total number of pages in the PDF' },
+      autoAdvance:   { type: 'boolean', description: 'Auto-advance slides with timer (default: false)' },
+      timerPerSlide: { type: 'number',  description: 'Seconds per slide when auto-advancing (default: 10)' },
+      description:   { type: 'string',  description: 'Description text' },
     },
   },
 
   video: {
     label: 'Video',
-    description: 'HTML5 video player with optional start/end time',
+    description: 'HTML5 video player or YouTube/Vimeo embed with optional start/end time',
     component: 'VideoPlayer',
-    required: ['src'],
-    optional: ['startTime', 'endTime'],
+    required: [],
+    optional: ['src', 'url', 'startTime', 'endTime', 'description'],
     contentSchema: {
-      src:       { type: 'string', description: 'Path to MP4 file (e.g. "/videos/kinderrechte.mp4")' },
-      startTime: { type: 'number', description: 'Seconds to start at (default: 0)' },
-      endTime:   { type: 'number', description: 'Seconds to stop at (null = play to end)', nullable: true },
+      src:         { type: 'string', description: 'Path to local MP4 file (e.g. "/videos/kinderrechte.mp4")' },
+      url:         { type: 'string', description: 'YouTube or Vimeo URL' },
+      startTime:   { type: 'number', description: 'Seconds to start at (default: 0)' },
+      endTime:     { type: 'number', description: 'Seconds to stop at (null = play to end)', nullable: true },
+      description: { type: 'string', description: 'Description text for students' },
     },
   },
 
@@ -418,20 +423,13 @@ export const MISSION_TYPE_CONFIG = {
       label: 'Präsentation',
       icon: '\u{1F4CA}',
       color: '#00B4D8',
-      uiFields: [
-        { key: 'content.slides', label: 'PDF-Datei', type: 'file', accept: '.pdf', required: true },
-        { key: 'content.slideCount', label: 'Seitenanzahl', type: 'number', min: 1, required: true },
-      ],
+      uiFields: [], // handled by custom SlidesConfig component
     },
     video: {
       label: 'Video',
-      icon: '\u{1F4FA}',
+      icon: '\u{1F3AC}',
       color: '#9B5DE5',
-      uiFields: [
-        { key: 'content.src', label: 'Video-Datei', type: 'file', accept: 'video/mp4', required: true },
-        { key: 'content.startTime', label: 'Startzeit (Sek.)', type: 'number', min: 0, required: false },
-        { key: 'content.endTime', label: 'Endzeit (Sek.)', type: 'number', min: 0, required: false },
-      ],
+      uiFields: [], // handled by custom VideoConfig component
     },
     'multi-step': {
       label: 'Multi-Step',
@@ -507,19 +505,14 @@ export const MISSION_TYPE_CONFIG = {
       icon: '\u{1F4CA}',
       uiFields: [
         { key: 'title', label: 'Titel', type: 'text', required: true },
-        { key: 'content.slides', label: 'PDF-Datei', type: 'file', accept: '.pdf', required: true },
-        { key: 'content.slideCount', label: 'Seitenanzahl', type: 'number', min: 1, required: true },
-      ],
+      ], // rest handled by custom SlidesConfig
     },
     video: {
       label: 'Video',
-      icon: '\u{1F4FA}',
+      icon: '\u{1F3AC}',
       uiFields: [
         { key: 'title', label: 'Titel', type: 'text', required: true },
-        { key: 'content.src', label: 'Video-Datei', type: 'file', accept: 'video/mp4', required: true },
-        { key: 'content.startTime', label: 'Startzeit (Sek.)', type: 'number', min: 0, required: false },
-        { key: 'content.endTime', label: 'Endzeit (Sek.)', type: 'number', min: 0, required: false },
-      ],
+      ], // rest handled by custom VideoConfig
     },
     kahoot: {
       label: 'Kahoot',
