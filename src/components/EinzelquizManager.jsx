@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ref, push, set, remove, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
+import { useProject } from '../contexts/ProjectContext';
 import { DEFAULT_EINZELQUIZ_QUESTIONS, QUIZ_TYPE_LABELS, QUIZ_TYPE_COLORS } from '../data/einzelquizQuestions';
 import EinzelquizCreator from './EinzelquizCreator';
 import EinzelquizResults from './EinzelquizResults';
 import EinzelquizComparison from './EinzelquizComparison';
 import QuizRandomizer from './QuizRandomizer';
+import { generateShortCode, saveShortCode } from '../utils/shortCode';
 
 function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
   return (
@@ -24,7 +26,9 @@ function ConfirmDialog({ message, confirmLabel, onConfirm, onCancel, danger }) {
   );
 }
 
-export default function EinzelquizManager({ dayColor }) {
+export default function EinzelquizManager({ dayColor, projectId: propProjectId }) {
+  const { projectId: ctxProjectId } = useProject();
+  const projectId = propProjectId || ctxProjectId;
   const [quizzes, setQuizzes] = useState([]);
   const [mode, setMode] = useState('list'); // 'list' | 'create' | 'edit' | 'results' | 'comparison' | 'randomize'
   const [editingQuiz, setEditingQuiz] = useState(null);
@@ -40,7 +44,9 @@ export default function EinzelquizManager({ dayColor }) {
     const unsub = onValue(quizzesRef, (snap) => {
       const data = snap.val();
       if (data) {
-        const list = Object.entries(data).map(([key, val]) => ({ ...val, _key: key }));
+        const list = Object.entries(data)
+          .map(([key, val]) => ({ ...val, _key: key }))
+          .filter(item => item.projectId === projectId);
         list.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
         setQuizzes(list);
       } else {
@@ -48,26 +54,40 @@ export default function EinzelquizManager({ dayColor }) {
       }
     });
     return () => unsub();
-  }, []);
+  }, [projectId]);
 
-  const handleCreateDefault = (quizType) => {
+  const handleCreateDefault = async (quizType) => {
     const label = QUIZ_TYPE_LABELS[quizType] || quizType;
-    push(ref(db, 'einzelquizzes'), {
-      title: `${label} \u2014 Kinderrechte`,
-      quizType,
-      showCorrectAfterEach: false,
-      questions: DEFAULT_EINZELQUIZ_QUESTIONS.map(q => ({ ...q })),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }).catch(console.error);
+    const shortCode = generateShortCode();
+    const newRef = push(ref(db, 'einzelquizzes'));
+    try {
+      await set(newRef, {
+        title: `${label} \u2014 Kinderrechte`,
+        quizType,
+        shortCode,
+        showCorrectAfterEach: false,
+        questions: DEFAULT_EINZELQUIZ_QUESTIONS.map(q => ({ ...q })),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        projectId: projectId || null,
+      });
+      await saveShortCode(shortCode, newRef.key);
+    } catch (e) { console.error(e); }
   };
 
-  const handleSaveNew = (quizData) => {
-    push(ref(db, 'einzelquizzes'), {
-      ...quizData,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }).catch(console.error);
+  const handleSaveNew = async (quizData) => {
+    const shortCode = generateShortCode();
+    const newRef = push(ref(db, 'einzelquizzes'));
+    try {
+      await set(newRef, {
+        ...quizData,
+        shortCode,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        projectId: projectId || null,
+      });
+      await saveShortCode(shortCode, newRef.key);
+    } catch (e) { console.error(e); }
     setMode('list');
   };
 
@@ -77,6 +97,7 @@ export default function EinzelquizManager({ dayColor }) {
       ...quizData,
       createdAt: editingQuiz.createdAt || Date.now(),
       updatedAt: Date.now(),
+      projectId: editingQuiz.projectId || projectId || null,
     }).catch(console.error);
     setEditingQuiz(null);
     setMode('list');
@@ -141,15 +162,22 @@ export default function EinzelquizManager({ dayColor }) {
       <QuizRandomizer
         mode="einzelquiz"
         dayColor={color}
-        onGenerate={(result) => {
-          push(ref(db, 'einzelquizzes'), {
-            title: result.title,
-            quizType: 'uebung',
-            showCorrectAfterEach: true,
-            questions: result.questions,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }).catch(console.error);
+        onGenerate={async (result) => {
+          const shortCode = generateShortCode();
+          const newRef = push(ref(db, 'einzelquizzes'));
+          try {
+            await set(newRef, {
+              title: result.title,
+              quizType: 'uebung',
+              shortCode,
+              showCorrectAfterEach: true,
+              questions: result.questions,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              projectId: projectId || null,
+            });
+            await saveShortCode(shortCode, newRef.key);
+          } catch (e) { console.error(e); }
           setMode('list');
         }}
         onCancel={() => setMode('list')}
@@ -224,7 +252,9 @@ export default function EinzelquizManager({ dayColor }) {
             const date = q.updatedAt
               ? new Date(q.updatedAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
               : '';
-            const quizUrl = `${window.location.origin}/einzelquiz/${q._key}`;
+            const quizUrl = q.shortCode
+              ? `${window.location.origin}/q/${q.shortCode}`
+              : `${window.location.origin}/einzelquiz/${q._key}`;
             const isExpanded = expandedQR === q._key;
 
             return (

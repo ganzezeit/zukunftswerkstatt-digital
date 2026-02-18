@@ -3,6 +3,7 @@ import { ref, set, get, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import { playClickSound } from '../utils/audio';
+import { useProject } from '../contexts/ProjectContext';
 import VideoRoomManager from './VideoRoomManager';
 import Flag from './Flag';
 
@@ -22,6 +23,7 @@ function generateCode() {
 }
 
 export default function ChatManager({ onClose, dayColor }) {
+  const { projectId } = useProject();
   const color = dayColor || '#FF6B35';
   const [view, setView] = useState('list'); // 'list' | 'qr' | 'video'
   const [rooms, setRooms] = useState([]);
@@ -37,14 +39,16 @@ export default function ChatManager({ onClose, dayColor }) {
     const unsub = onValue(roomsRef, (snap) => {
       const data = snap.val();
       if (data) {
-        const list = Object.entries(data).map(([code, val]) => ({
-          code,
-          name: val.name,
-          status: val.status,
-          languages: val.languages || [],
-          createdAt: val.createdAt,
-          participantCount: val.participants ? Object.keys(val.participants).length : 0,
-        }));
+        const list = Object.entries(data)
+          .filter(([, val]) => val.projectId === projectId)
+          .map(([code, val]) => ({
+            code,
+            name: val.name,
+            status: val.status,
+            languages: val.languages || [],
+            createdAt: val.createdAt,
+            participantCount: val.participants ? Object.keys(val.participants).length : 0,
+          }));
         list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setRooms(list);
         const counts = {};
@@ -55,7 +59,7 @@ export default function ChatManager({ onClose, dayColor }) {
       }
     });
     return () => unsub();
-  }, []);
+  }, [projectId]);
 
   const toggleLang = (code) => {
     setSelectedLangs(prev =>
@@ -83,6 +87,7 @@ export default function ChatManager({ onClose, dayColor }) {
       status: 'active',
       languages: selectedLangs,
       createdAt: Date.now(),
+      projectId: projectId || null,
     };
 
     try {

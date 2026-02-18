@@ -24,12 +24,11 @@ export default function TeacherPanel({
   onResetIntro,
   onResetAll,
   className: klassenName,
-  onSwitchClass,
-  onNewClass,
-  onResetClass,
   onForceSave,
   lastSaveTimestamp,
   onOpenWeeklyReport,
+  onOpenTagesberichte,
+  onOpenWochenberichtGen,
 }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [localSaveStatus, setLocalSaveStatus] = useState('idle');
@@ -188,47 +187,35 @@ export default function TeacherPanel({
           </>
         )}
 
-        {/* Class section */}
-        {klassenName && (
+        {/* Reports */}
+        {klassenName && (onOpenWeeklyReport || onOpenTagesberichte || onOpenWochenberichtGen) && (
           <>
-            <div style={styles.sectionHeader}>Klasse</div>
-            <div style={styles.stateBox}>
-              <div style={styles.stateRow}>
-                <span style={styles.stateLabel}>Aktive Klasse:</span>
-                <span style={styles.stateValue}>{klassenName}</span>
-              </div>
-            </div>
+            <div style={styles.sectionHeader}>Berichte</div>
             <div style={styles.actions}>
-              {onSwitchClass && (
-                <button style={styles.actionButton} onClick={() => handleButton(onSwitchClass)}>
-                  {'\u{1F504}'} Klasse wechseln
+              {onOpenTagesberichte && (
+                <button
+                  style={{ ...styles.actionButton, background: '#FFF3E0', color: '#E65100' }}
+                  onClick={() => handleButton(onOpenTagesberichte)}
+                >
+                  {'\u{1F4DD}'} Tagesberichte
                 </button>
               )}
-              {onNewClass && (
-                <button style={styles.actionButton} onClick={() => handleButton(onNewClass)}>
-                  {'\u2795'} Neue Klasse
+              {onOpenWochenberichtGen && (
+                <button
+                  style={{ ...styles.actionButton, background: '#E8F5E9', color: '#2E7D32' }}
+                  onClick={() => handleButton(onOpenWochenberichtGen)}
+                >
+                  {'\u{1F4CA}'} Wochenbericht (PDF)
                 </button>
               )}
-              {onResetClass && (
-                <button style={{ ...styles.actionButton, ...styles.dangerButtonIdle }} onClick={() => handleButton(onResetClass)}>
-                  {'\u26A0\uFE0F'} Klasse zurücksetzen
+              {onOpenWeeklyReport && (
+                <button
+                  style={{ ...styles.actionButton, background: '#E3F2FD', color: '#1565C0' }}
+                  onClick={() => handleButton(onOpenWeeklyReport)}
+                >
+                  {'\u{1F4CB}'} Wochenbericht (Druck)
                 </button>
               )}
-            </div>
-          </>
-        )}
-
-        {/* Weekly Report */}
-        {klassenName && onOpenWeeklyReport && (
-          <>
-            <div style={styles.sectionHeader}>Bericht</div>
-            <div style={styles.actions}>
-              <button
-                style={{ ...styles.actionButton, background: '#E3F2FD', color: '#1565C0' }}
-                onClick={() => handleButton(onOpenWeeklyReport)}
-              >
-                {'\u{1F4CB}'} Wochenbericht erstellen
-              </button>
             </div>
           </>
         )}

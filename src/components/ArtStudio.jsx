@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ref, set, onValue, remove, push } from 'firebase/database';
 import { db } from '../firebase';
+import { useProject } from '../contexts/ProjectContext';
 
 const API_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/generate-image';
 const VIDEO_API_URL = 'https://harmonious-taffy-89ea6b.netlify.app/.netlify/functions/generate-video';
@@ -216,6 +217,7 @@ const STYLES = [
 const RATIOS = ['1:1', '16:9', '9:16'];
 
 export default function ArtStudio({ onClose, initialMode }) {
+  const { projectId } = useProject();
   const t = UI[DEVICE_LANG];
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('illustration');
@@ -259,7 +261,8 @@ export default function ArtStudio({ onClose, initialMode }) {
   const [mPlaying, setMPlaying] = useState(null);
 
   // Room state
-  const [roomCode, setRoomCode] = useState(() => localStorage.getItem('artroom-teacher-code') || '');
+  const lsKey = projectId ? `artroom-teacher-code-${projectId}` : 'artroom-teacher-code';
+  const [roomCode, setRoomCode] = useState(() => localStorage.getItem(lsKey) || '');
   const [room, setRoom] = useState(null);
   const [studentImages, setStudentImages] = useState([]);
   const [studentVideos, setStudentVideos] = useState([]);
@@ -297,7 +300,7 @@ export default function ArtStudio({ onClose, initialMode }) {
       const data = snap.val();
       setRoom(data);
       if (!data) {
-        localStorage.removeItem('artroom-teacher-code');
+        localStorage.removeItem(lsKey);
         setRoomCode('');
       }
     });
@@ -540,8 +543,9 @@ export default function ArtStudio({ onClose, initialMode }) {
       createdBy: 'teacher',
       active: true,
       settings: { imageEnabled: true, videoEnabled: false },
+      projectId: projectId || null,
     });
-    localStorage.setItem('artroom-teacher-code', code);
+    localStorage.setItem(lsKey, code);
     setRoomCode(code);
     setShowRoom(true);
   };
@@ -549,7 +553,7 @@ export default function ArtStudio({ onClose, initialMode }) {
   const handleCloseRoom = async () => {
     if (!roomCode) return;
     await set(ref(db, 'artRooms/' + roomCode + '/active'), false);
-    localStorage.removeItem('artroom-teacher-code');
+    localStorage.removeItem(lsKey);
     setRoomCode('');
     setRoom(null);
     setShowRoom(false);

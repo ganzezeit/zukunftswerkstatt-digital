@@ -3,7 +3,8 @@ import { DAYS } from '../data/days';
 import { loadState, saveState, resetState } from '../utils/persistence';
 import { setVolume, playClickSound, playSuccessSound, playCompleteSound } from '../utils/audio';
 import { audioManager } from '../utils/audioManager';
-import { LOW_ENERGY_THRESHOLD, MAX_ENERGY, CLASS_STORAGE_KEY } from '../utils/constants';
+import { LOW_ENERGY_THRESHOLD, MAX_ENERGY } from '../utils/constants';
+import { useProject } from '../contexts/ProjectContext';
 
 // Eager: always visible or on first screen
 import SplashScreen from './SplashScreen';
@@ -13,7 +14,6 @@ import TopBar from './TopBar';
 import Confetti from './Confetti';
 
 // Lazy: loaded on demand when screen/feature is needed
-const ClassSetupScreen = lazy(() => import('./ClassSetupScreen'));
 const WochenplanScreen = lazy(() => import('./WochenplanScreen'));
 const ProjektregelnScreen = lazy(() => import('./ProjektregelnScreen'));
 const EnergizerIchStimmeZu = lazy(() => import('./EnergizerIchStimmeZu'));
@@ -29,6 +29,9 @@ const QuizDialog = lazy(() => import('./QuizDialog'));
 const ChatManager = lazy(() => import('./ChatManager'));
 const ArtStudio = lazy(() => import('./ArtStudio'));
 const WeeklyReport = lazy(() => import('./WeeklyReport'));
+const WochenberichtGenerator = lazy(() => import('./WochenberichtGenerator'));
+const TagesberichtModal = lazy(() => import('./TagesberichtModal'));
+const TagesberichtList = lazy(() => import('./TagesberichtList'));
 const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 
 /*
@@ -41,7 +44,12 @@ const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 const TRANSITION_MS = 400;
 
 export default function App() {
-  const [state, setState] = useState(() => loadState());
+  // Project context — className comes from selected project (must be before state init)
+  const { project, clearProject } = useProject();
+  const className = project?.className || null;
+  const projectId = project?.id || null;
+
+  const [state, setState] = useState(() => loadState(projectId));
   const [screen, setScreen] = useState('splash');
   const [selectedDay, setSelectedDay] = useState(null);
   const [viewingStepIndex, setViewingStepIndex] = useState(null);
@@ -55,14 +63,12 @@ export default function App() {
   const [artStudioMode, setArtStudioMode] = useState(null); // null | 'room' | 'studio'
   const [showWeeklyReport, setShowWeeklyReport] = useState(false);
   const [showEnergizerPopup, setShowEnergizerPopup] = useState(false);
+  const [showWochenberichtGen, setShowWochenberichtGen] = useState(false);
+  const [showTagesberichtList, setShowTagesberichtList] = useState(false);
+  const [pendingTagesberichtDay, setPendingTagesberichtDay] = useState(null);
   const [freeEnergizer, setFreeEnergizer] = useState(false);
   const [freeEnergizerData, setFreeEnergizerData] = useState(null);
   const screenBeforeFreeEnergizer = useRef(null);
-
-  // F4: Class system
-  const [className, setClassName] = useState(() => {
-    try { return localStorage.getItem(CLASS_STORAGE_KEY) || null; } catch { return null; }
-  });
   const isRemoteUpdateRef = useRef(false);
 
   // Save status tracking
@@ -149,7 +155,7 @@ export default function App() {
   }, [className, state]);
 
   // Persist on every state change (localStorage always as fallback)
-  useEffect(() => { saveState(state); }, [state]);
+  useEffect(() => { saveState(state, projectId); }, [state, projectId]);
   useEffect(() => { setVolume(state.volume); }, [state.volume]);
 
   // F4: Firebase sync — subscribe to class state (dynamic import: Firebase loads only when needed)
@@ -336,6 +342,18 @@ export default function App() {
       playCompleteSound();
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3500);
+      // Trigger Tagesbericht modal after day completion
+      if (className) {
+        import('firebase/database').then(({ ref, get }) => {
+          import('../firebase').then(({ db }) => {
+            get(ref(db, `classes/${className}/dailyReports/${day.id}`)).then(snap => {
+              if (!snap.val()) {
+                setTimeout(() => setPendingTagesberichtDay(day.id), 2000);
+              }
+            }).catch(() => {});
+          });
+        }).catch(() => {});
+      }
     }
 
     setState(newState);
@@ -530,7 +548,7 @@ export default function App() {
   };
 
   const handleResetAll = () => {
-    const fresh = resetState();
+    const fresh = resetState(projectId);
     setState(fresh);
     setSelectedDay(null);
     setViewingStepIndex(null);
@@ -539,60 +557,11 @@ export default function App() {
     audioManager.stopCurrent();
   };
 
-  // F4: Class handlers
-  const handleClassSelected = (name) => {
-    // Reset to fresh default state first — Firebase subscription will overwrite
-    // if this class already has saved progress
-    const fresh = resetState();
-    setState(prev => ({ ...fresh, volume: prev.volume }));
-    setSelectedDay(null);
-    setViewingStepIndex(null);
-    setScreen('splash');
-    localStorage.setItem(CLASS_STORAGE_KEY, name);
-    setClassName(name);
-  };
-
-  const handleSwitchClass = () => {
-    localStorage.removeItem(CLASS_STORAGE_KEY);
-    setClassName(null);
-    setShowTeacherPanel(false);
-  };
-
-  const handleNewClass = () => {
-    localStorage.removeItem(CLASS_STORAGE_KEY);
-    const fresh = resetState();
-    setState(fresh);
-    setClassName(null);
-    setSelectedDay(null);
-    setViewingStepIndex(null);
-    setScreen('splash');
-    setShowTeacherPanel(false);
-  };
-
-  const handleResetClass = () => {
-    if (!className) return;
-    const fresh = resetState();
-    setState(fresh);
-    setSelectedDay(null);
-    setViewingStepIndex(null);
-    setScreen('splash');
-    setShowTeacherPanel(false);
-  };
-
   // Current computed values
   const dayData = getDayData();
   const activeStepIdx = dayData ? getActiveStepIndex(dayData.id) : 0;
   const completedDaysList = DAYS.filter(d => isDayCompleted(d.id)).map(d => d.id);
   const isIntroScreen = ['splash', 'wochenplan', 'projektregeln', 'ichStimmeZu', 'lernkarten'].includes(screen);
-
-  // F4: Show class setup if no class selected
-  if (!className) {
-    return (
-      <Suspense fallback={<div style={{ width: '100%', height: '100vh', background: 'linear-gradient(160deg, #FFE5D9 0%, #D4E4F7 100%)' }} />}>
-        <ClassSetupScreen onClassSelected={handleClassSelected} />
-      </Suspense>
-    );
-  }
 
   return (
     <div className="no-select" style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -616,6 +585,8 @@ export default function App() {
         onLightningClick={!isIntroScreen ? handleLightningClick : undefined}
         className={className}
         saveStatus={className ? saveStatus : null}
+        projectName={project?.name}
+        onDashboard={clearProject}
       />
       </div>
 
@@ -707,12 +678,11 @@ export default function App() {
           onResetIntro={handleResetIntro}
           onResetAll={handleResetAll}
           className={className}
-          onSwitchClass={handleSwitchClass}
-          onNewClass={handleNewClass}
-          onResetClass={handleResetClass}
           onForceSave={handleForceSave}
           lastSaveTimestamp={lastSaveTimestamp}
           onOpenWeeklyReport={() => { setShowWeeklyReport(true); setShowTeacherPanel(false); }}
+          onOpenTagesberichte={() => { setShowTagesberichtList(true); setShowTeacherPanel(false); }}
+          onOpenWochenberichtGen={() => { setShowWochenberichtGen(true); setShowTeacherPanel(false); }}
         />
         </Suspense>
       )}
@@ -765,6 +735,39 @@ export default function App() {
           <WeeklyReport
             className={className}
             onClose={() => setShowWeeklyReport(false)}
+          />
+        </Suspense>
+      )}
+
+      {showWochenberichtGen && (
+        <Suspense fallback={null}>
+          <WochenberichtGenerator
+            className={className}
+            project={project}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setShowWochenberichtGen(false)}
+          />
+        </Suspense>
+      )}
+
+      {showTagesberichtList && (
+        <Suspense fallback={null}>
+          <TagesberichtList
+            className={className}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setShowTagesberichtList(false)}
+          />
+        </Suspense>
+      )}
+
+      {pendingTagesberichtDay && (
+        <Suspense fallback={null}>
+          <TagesberichtModal
+            dayNumber={pendingTagesberichtDay}
+            className={className}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setPendingTagesberichtDay(null)}
+            onSaved={() => setPendingTagesberichtDay(null)}
           />
         </Suspense>
       )}
