@@ -95,6 +95,20 @@ export const STEP_TYPES = {
       description: { type: 'string', description: 'Optional description text' },
     },
   },
+
+  videochat: {
+    label: 'Chat & Übersetzer',
+    description: 'Jitsi video chat with real-time translation between languages',
+    component: 'ChatManager',
+    required: [],
+    optional: ['roomName', 'enableTranslation', 'supportedLanguages', 'description'],
+    contentSchema: {
+      roomName:            { type: 'string', description: 'Pre-set room name (auto-generated if empty)' },
+      enableTranslation:   { type: 'boolean', description: 'Enable real-time translation (default: true)' },
+      supportedLanguages:  { type: 'array', items: 'string', description: 'Supported languages (e.g. ["de", "en", "tr", "fr", "sw"])' },
+      description:         { type: 'string', description: 'Description shown on the step card' },
+    },
+  },
 };
 
 // ─── SUB-STEP TYPES ─────────────────────────────────────────────────────────────
@@ -436,6 +450,17 @@ export const MISSION_TYPE_CONFIG = {
       uiFields: [
         { key: 'content.url', label: 'Meeting-URL', type: 'url', required: true },
         { key: 'content.label', label: 'Button-Text', type: 'text', required: false, placeholder: 'Jetzt sprechen!' },
+        { key: 'content.description', label: 'Beschreibung', type: 'textarea', required: false },
+      ],
+    },
+    videochat: {
+      label: 'Chat & Übersetzer',
+      icon: '\u{1F4AC}',
+      color: '#E91E63',
+      uiFields: [
+        { key: 'content.roomName', label: 'Raumname', type: 'text', required: false, placeholder: 'Leer = automatisch generiert' },
+        { key: 'content.enableTranslation', label: 'Übersetzung aktivieren', type: 'checkbox', required: false },
+        { key: 'content.supportedLanguages', label: 'Sprachen', type: 'string-list', required: false },
         { key: 'content.description', label: 'Beschreibung', type: 'textarea', required: false },
       ],
     },

@@ -73,6 +73,14 @@ const PALETTE_CATEGORIES = [
         color: '#00897B',
         defaultContent: { title: 'Video-Call', content: { url: '', label: 'Jetzt sprechen!', description: '' } },
       },
+      {
+        type: 'videochat',
+        label: 'Chat & Übersetzer',
+        icon: '\u{1F4AC}',
+        desc: 'Video-Chat mit Übersetzung',
+        color: '#E91E63',
+        defaultContent: { title: 'Chat & Übersetzer', content: { roomName: '', enableTranslation: true, supportedLanguages: ['de', 'en', 'tr'], description: '' } },
+      },
     ],
   },
 ];

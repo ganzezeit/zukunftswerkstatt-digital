@@ -4,6 +4,7 @@ import SlideViewer from './SlideViewer';
 import VideoPlayer from './VideoPlayer';
 import MultiStepViewer from './MultiStepViewer';
 import EinzelquizStepCard from './EinzelquizStepCard';
+import ChatManager from './ChatManager';
 import GlossaryTooltip from './GlossaryTooltip';
 import { playClickSound, playSuccessSound } from '../utils/audio';
 
@@ -24,6 +25,8 @@ export default function StepViewer({ step, dayColor, onComplete, onBack }) {
       return <ExternalLink step={step} dayColor={dayColor} onComplete={onComplete} type="kahoot" />;
     case 'meet':
       return <ExternalLink step={step} dayColor={dayColor} onComplete={onComplete} type="meet" />;
+    case 'videochat':
+      return <ChatManager onClose={onComplete} dayColor={dayColor} />;
     case 'activity':
     default:
       return <ActivityScreen step={step} dayColor={dayColor} onComplete={onComplete} />;

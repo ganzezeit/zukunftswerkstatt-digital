@@ -232,6 +232,18 @@ function validateStepContent(step, path, errors) {
       if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
     }
+    case 'videochat': {
+      if (content.roomName !== undefined) pushIf(errors, !isString(content.roomName), `${path}.content.roomName: must be a string`);
+      if (content.enableTranslation !== undefined) pushIf(errors, !isBoolean(content.enableTranslation), `${path}.content.enableTranslation: must be a boolean`);
+      if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
+      if (content.supportedLanguages !== undefined) {
+        pushIf(errors, !isArray(content.supportedLanguages), `${path}.content.supportedLanguages: must be an array`);
+        if (isArray(content.supportedLanguages)) {
+          content.supportedLanguages.forEach((l, i) => pushIf(errors, !isString(l), `${path}.content.supportedLanguages[${i}]: must be a string`));
+        }
+      }
+      break;
+    }
   }
 }
 
