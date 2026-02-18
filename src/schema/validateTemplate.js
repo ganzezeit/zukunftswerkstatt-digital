@@ -163,14 +163,14 @@ function validateSubStep(sub, index, stepPath, errors) {
 function validateStepContent(step, path, errors) {
   const content = step.content;
   if (!isObject(content)) {
-    errors.push(`${path}.content: required object`);
+    // Allow empty content object for draft saves
     return;
   }
 
   const type = step.type;
   switch (type) {
     case 'activity': {
-      pushIf(errors, !content.title || !isString(content.title), `${path}.content.title: required string`);
+      if (content.title !== undefined) pushIf(errors, !isString(content.title), `${path}.content.title: must be a string`);
       if (content.text !== undefined) pushIf(errors, !isString(content.text), `${path}.content.text: must be a string`);
       if (content.bullets !== undefined) {
         pushIf(errors, !isArray(content.bullets), `${path}.content.bullets: must be an array`);
@@ -180,14 +180,14 @@ function validateStepContent(step, path, errors) {
       if (content.layout !== undefined) {
         pushIf(errors, content.layout !== 'group-cards', `${path}.content.layout: must be "group-cards" or undefined`);
       }
-      if (content.layout === 'group-cards') {
-        pushIf(errors, !isArray(content.groups) || content.groups.length === 0, `${path}.content.groups: required non-empty array when layout is "group-cards"`);
+      if (content.layout === 'group-cards' && content.groups !== undefined) {
+        pushIf(errors, !isArray(content.groups), `${path}.content.groups: must be an array`);
         if (isArray(content.groups)) {
           content.groups.forEach((g, i) => {
             const gp = `${path}.content.groups[${i}]`;
             pushIf(errors, !isObject(g), `${gp}: must be an object`);
             if (isObject(g)) {
-              pushIf(errors, !g.name || !isString(g.name), `${gp}.name: required string`);
+              if (g.name !== undefined) pushIf(errors, !isString(g.name), `${gp}.name: must be a string`);
               if (g.icon !== undefined) pushIf(errors, !isString(g.icon), `${gp}.icon: must be a string`);
               if (g.task !== undefined) pushIf(errors, !isString(g.task), `${gp}.task: must be a string`);
               if (g.members !== undefined) {
@@ -202,17 +202,14 @@ function validateStepContent(step, path, errors) {
       break;
     }
     case 'slides': {
-      pushIf(errors, !content.slides || !isString(content.slides), `${path}.content.slides: required string`);
-      pushIf(errors, !content.slideCount || !isNumber(content.slideCount) || content.slideCount < 1, `${path}.content.slideCount: required positive number`);
+      if (content.slides !== undefined) pushIf(errors, !isString(content.slides), `${path}.content.slides: must be a string`);
+      if (content.slideCount !== undefined) pushIf(errors, !isNumber(content.slideCount) || content.slideCount < 1, `${path}.content.slideCount: must be a positive number`);
       if (content.autoAdvance !== undefined) pushIf(errors, !isBoolean(content.autoAdvance), `${path}.content.autoAdvance: must be a boolean`);
       if (content.timerPerSlide !== undefined) pushIf(errors, !isNumber(content.timerPerSlide) || content.timerPerSlide < 1, `${path}.content.timerPerSlide: must be a positive number`);
       if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
     }
     case 'video': {
-      if (!content.src && !content.url) {
-        errors.push(`${path}.content: requires either src (file) or url (YouTube/Vimeo)`);
-      }
       if (content.src !== undefined) pushIf(errors, !isString(content.src), `${path}.content.src: must be a string`);
       if (content.url !== undefined) pushIf(errors, !isString(content.url), `${path}.content.url: must be a string`);
       if (content.startTime !== undefined) pushIf(errors, !isNumber(content.startTime), `${path}.content.startTime: must be a number`);
@@ -221,21 +218,22 @@ function validateStepContent(step, path, errors) {
       break;
     }
     case 'multi-step': {
-      pushIf(errors, !isArray(content.subSteps), `${path}.content.subSteps: required array`);
-      if (isArray(content.subSteps)) {
-        pushIf(errors, content.subSteps.length === 0, `${path}.content.subSteps: must not be empty`);
-        content.subSteps.forEach((sub, i) => validateSubStep(sub, i, path, errors));
+      if (content.subSteps !== undefined) {
+        pushIf(errors, !isArray(content.subSteps), `${path}.content.subSteps: must be an array`);
+        if (isArray(content.subSteps)) {
+          content.subSteps.forEach((sub, i) => validateSubStep(sub, i, path, errors));
+        }
       }
       break;
     }
     case 'einzelquiz': {
-      pushIf(errors, !content.quizType || !['vortest', 'nachtest'].includes(content.quizType), `${path}.content.quizType: must be "vortest" or "nachtest"`);
+      if (content.quizType !== undefined) pushIf(errors, !['vortest', 'nachtest'].includes(content.quizType), `${path}.content.quizType: must be "vortest" or "nachtest"`);
       if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
     }
     case 'kahoot':
     case 'meet': {
-      pushIf(errors, !content.url || !isString(content.url), `${path}.content.url: required string`);
+      if (content.url !== undefined) pushIf(errors, !isString(content.url), `${path}.content.url: must be a string`);
       if (content.label !== undefined) pushIf(errors, !isString(content.label), `${path}.content.label: must be a string`);
       if (content.description !== undefined) pushIf(errors, !isString(content.description), `${path}.content.description: must be a string`);
       break;
@@ -302,10 +300,13 @@ export function validateStep(step, path = 'step') {
   if (step.desc !== undefined) {
     pushIf(errors, !isString(step.desc), `${path}.desc: must be a string`);
   }
+  if (step.iconImage !== undefined) {
+    pushIf(errors, !isString(step.iconImage), `${path}.iconImage: must be a string`);
+  }
 
-  // Content (required)
+  // Content (validate if present)
   if (!step.content) {
-    errors.push(`${path}.content: required`);
+    // Allow missing content for draft saves
   } else if (VALID_STEP_TYPES.includes(step.type)) {
     validateStepContent(step, path, errors);
   }
@@ -356,7 +357,7 @@ export function validateDay(day, path = 'day') {
   // Required fields
   pushIf(errors, !isNumber(day.id) || day.id < 1, `${path}.id: required positive number`);
   pushIf(errors, !day.name || !isString(day.name), `${path}.name: required string`);
-  pushIf(errors, !day.sub || !isString(day.sub), `${path}.sub: required string`);
+  if (day.sub !== undefined && day.sub !== '') pushIf(errors, !isString(day.sub), `${path}.sub: must be a string`);
   pushIf(errors, !day.emoji || !isString(day.emoji), `${path}.emoji: required string`);
   pushIf(errors, !day.color || !isString(day.color), `${path}.color: required string`);
 
@@ -368,10 +369,9 @@ export function validateDay(day, path = 'day') {
   if (day.iconImage !== undefined) pushIf(errors, !isString(day.iconImage), `${path}.iconImage: must be a string`);
   if (day.dayIntro !== undefined) validateDayIntro(day.dayIntro, `${path}.dayIntro`, errors);
 
-  // Steps (required)
+  // Steps (required array, but can be empty during editing)
   pushIf(errors, !isArray(day.steps), `${path}.steps: required array`);
   if (isArray(day.steps)) {
-    pushIf(errors, day.steps.length === 0, `${path}.steps: must not be empty`);
     // Check for unique step IDs within the day
     const stepIds = new Set();
     day.steps.forEach((step, i) => {

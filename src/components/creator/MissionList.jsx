@@ -6,7 +6,7 @@ Object.entries(MISSION_TYPE_CONFIG.steps).forEach(([type, cfg]) => {
   TYPE_META[type] = { icon: cfg.icon, label: cfg.label, color: cfg.color };
 });
 
-export default function MissionList({ missions, dayColor, onEdit, onDelete, onReorder, editingIdx }) {
+export default function MissionList({ missions, dayColor, onEdit, onDelete, onReorder, editingIdx, onIconGen }) {
   const dragRef = useRef(null);
 
   const handleDragStart = (e, idx) => {
@@ -98,6 +98,15 @@ export default function MissionList({ missions, dayColor, onEdit, onDelete, onRe
               </div>
             </div>
             <div style={s.cardActions}>
+              {onIconGen && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onIconGen(i); }}
+                  style={s.iconGenBtn}
+                  title="Icon generieren"
+                >
+                  {'\u{1F3A8}'}
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); if (i > 0) onReorder(i, i - 1); }}
                 style={s.arrowBtn}
@@ -194,5 +203,11 @@ const s = {
     width: 24, height: 24, border: 'none', borderRadius: 4,
     background: 'none', fontSize: 14, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  iconGenBtn: {
+    width: 24, height: 24, border: 'none', borderRadius: 4,
+    background: 'none', fontSize: 14, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    opacity: 0.7,
   },
 };

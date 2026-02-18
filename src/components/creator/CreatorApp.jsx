@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { saveTemplateToFirebase, loadTemplateFromFirebase } from '../../utils/templateLoader';
+import { saveTemplateToFirebase, loadTemplateFromFirebase, listTemplates, deleteTemplateFromFirebase } from '../../utils/templateLoader';
 import { validateTemplate } from '../../schema/validateTemplate';
 import { useAuth } from '../../contexts/AuthContext';
 import DayEditor from './DayEditor';
@@ -7,6 +7,7 @@ import MissionPalette from './MissionPalette';
 import MissionList from './MissionList';
 import MissionConfig from './MissionConfig';
 import CreatorPreview from './CreatorPreview';
+import IconGenerator from './IconGenerator';
 
 const DAY_COLORS = ['#FF6B35', '#00B4D8', '#9B5DE5', '#2ECC71', '#E74C3C', '#FFD166', '#00897B'];
 const DAY_EMOJIS = ['\u{1F4D6}', '\u{1F30D}', '\u{1F3AE}', '\u{1F6E0}\uFE0F', '\u{1F389}', '\u{1F31F}', '\u{1F3A8}'];
@@ -58,7 +59,7 @@ function makeEmptyTemplate() {
 export default function CreatorApp({ onBack, templateId }) {
   const { user } = useAuth();
   const [template, setTemplate] = useState(makeEmptyTemplate);
-  const [view, setView] = useState('metadata'); // metadata | editor | preview
+  const [view, setView] = useState(templateId ? 'loading' : 'projects'); // projects | metadata | editor | preview | loading
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [editingMissionIdx, setEditingMissionIdx] = useState(null);
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
@@ -66,7 +67,15 @@ export default function CreatorApp({ onBack, templateId }) {
   const [loadingTemplate, setLoadingTemplate] = useState(!!templateId);
   const saveTimerRef = useRef(null);
 
-  // Load existing template for editing
+  // Projects view state
+  const [templates, setTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // template id
+
+  // Icon generator state
+  const [iconGenTarget, setIconGenTarget] = useState(null); // mission index or null
+
+  // Load existing template for editing (when opened with templateId prop)
   useEffect(() => {
     if (!templateId) return;
     let cancelled = false;
@@ -76,15 +85,58 @@ export default function CreatorApp({ onBack, templateId }) {
         if (!cancelled && t) {
           setTemplate(t);
           setView('editor');
+        } else if (!cancelled) {
+          setView('projects');
         }
       } catch (e) {
         console.error('[Creator] Load error:', e);
+        if (!cancelled) setView('projects');
       } finally {
         if (!cancelled) setLoadingTemplate(false);
       }
     })();
     return () => { cancelled = true; };
   }, [templateId]);
+
+  // Fetch templates when projects view is active
+  const fetchTemplates = useCallback(async () => {
+    setTemplatesLoading(true);
+    try {
+      const list = await listTemplates();
+      setTemplates(list.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '')));
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'projects') fetchTemplates();
+  }, [view, fetchTemplates]);
+
+  const handleEditTemplate = async (id) => {
+    setLoadingTemplate(true);
+    try {
+      const t = await loadTemplateFromFirebase(id);
+      if (t) { setTemplate(t); setView('editor'); }
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id) => {
+    await deleteTemplateFromFirebase(id);
+    setDeleteConfirm(null);
+    fetchTemplates();
+  };
+
+  const handleNewTemplate = () => {
+    setTemplate(makeEmptyTemplate());
+    setSelectedDayIdx(0);
+    setEditingMissionIdx(null);
+    setSaveStatus('idle');
+    setErrors([]);
+    setView('metadata');
+  };
 
   const updateTemplate = useCallback((updater) => {
     setTemplate(prev => {
@@ -231,10 +283,87 @@ export default function CreatorApp({ onBack, templateId }) {
   const missions = currentDay?.steps || [];
   const editingMission = editingMissionIdx !== null ? missions[editingMissionIdx] : null;
 
-  if (loadingTemplate) {
+  // ─── Loading ───
+  if (loadingTemplate || view === 'loading') {
     return (
       <div style={s.fullscreen}>
         <div style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 20, color: '#8B5A2B' }}>Vorlage laden...</div>
+      </div>
+    );
+  }
+
+  // ─── Projects List (Landing Page) ───
+  if (view === 'projects') {
+    return (
+      <div style={s.fullscreen}>
+        <div style={s.projectsContainer}>
+          <button onClick={onBack} style={s.backBtn}>{'\u2190'} Zurueck</button>
+          <h1 style={s.metaTitle}>{'\u{1F3A8}'} Workshop Creator</h1>
+          <p style={s.metaHint}>Erstelle und verwalte deine Workshop-Vorlagen.</p>
+
+          {/* New template button */}
+          <button onClick={handleNewTemplate} style={s.newTemplateBtn}>
+            <span style={{ fontSize: 24 }}>+</span>
+            <span>Neu erstellen</span>
+          </button>
+
+          {/* Template list */}
+          {templatesLoading ? (
+            <div style={s.projectsLoading}>Vorlagen laden...</div>
+          ) : templates.length === 0 ? (
+            <div style={s.projectsEmpty}>
+              <span style={{ fontSize: 40 }}>{'\u{1F4C2}'}</span>
+              <p style={{ fontFamily: "'Fredoka', sans-serif", fontSize: 16, fontWeight: 600, color: '#999', margin: '12px 0 0' }}>
+                Noch keine Vorlagen gespeichert.
+              </p>
+            </div>
+          ) : (
+            <div style={s.templateList}>
+              {templates.map(t => (
+                <div key={t.id} style={s.templateCard}>
+                  <div style={s.templateInfo}>
+                    <span style={s.templateTitle}>{t.title}</span>
+                    {t.description && (
+                      <span style={s.templateDesc}>
+                        {t.description.length > 80 ? t.description.slice(0, 80) + '...' : t.description}
+                      </span>
+                    )}
+                    <div style={s.templateMeta}>
+                      {t.duration > 0 && <span style={s.templateChip}>{t.duration} Tage</span>}
+                      {t.createdBy && <span style={s.templateChip}>{t.createdBy}</span>}
+                      {t.updatedAt && (
+                        <span style={s.templateDate}>
+                          {new Date(t.updatedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={s.templateActions}>
+                    <button
+                      onClick={() => handleEditTemplate(t.id)}
+                      style={s.templateEditBtn}
+                    >
+                      Bearbeiten
+                    </button>
+                    {deleteConfirm === t.id ? (
+                      <div style={s.deleteConfirmRow}>
+                        <button onClick={() => handleDeleteTemplate(t.id)} style={s.deleteConfirmYes}>Ja</button>
+                        <button onClick={() => setDeleteConfirm(null)} style={s.deleteConfirmNo}>Nein</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirm(t.id)}
+                        style={s.templateDeleteBtn}
+                      >
+                        Loeschen
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -249,7 +378,7 @@ export default function CreatorApp({ onBack, templateId }) {
     return (
       <div style={s.fullscreen}>
         <div style={s.metaContainer}>
-          <button onClick={onBack} style={s.backBtn}>{'\u2190'} Zurueck</button>
+          <button onClick={() => setView('projects')} style={s.backBtn}>{'\u2190'} Zurueck</button>
           <h1 style={s.metaTitle}>{'\u{1F3A8}'} Workshop erstellen</h1>
           <p style={s.metaHint}>Gib deinem Workshop einen Namen und beschreibe ihn.</p>
 
@@ -378,7 +507,7 @@ export default function CreatorApp({ onBack, templateId }) {
       {/* Top Bar */}
       <div style={s.topBar}>
         <div style={s.topLeft}>
-          <button onClick={onBack} style={s.topBtn}>{'\u2190'}</button>
+          <button onClick={() => setView('projects')} style={s.topBtn}>{'\u2190'}</button>
           <span style={s.topTitle}>{template.title || 'Neuer Workshop'}</span>
           <button onClick={() => setView('metadata')} style={s.topBtnSmall}>Metadaten</button>
         </div>
@@ -425,6 +554,7 @@ export default function CreatorApp({ onBack, templateId }) {
             onDelete={deleteMission}
             onReorder={reorderMissions}
             editingIdx={editingMissionIdx}
+            onIconGen={(idx) => setIconGenTarget(idx)}
           />
         </div>
 
@@ -443,6 +573,21 @@ export default function CreatorApp({ onBack, templateId }) {
           onClose={() => setEditingMissionIdx(null)}
         />
       )}
+
+      {/* Icon Generator modal */}
+      {iconGenTarget !== null && (
+        <div style={s.iconGenOverlay}>
+          <div style={s.iconGenModal}>
+            <IconGenerator
+              onSelect={(url) => {
+                updateMission(iconGenTarget, { iconImage: url });
+                setIconGenTarget(null);
+              }}
+              onClose={() => setIconGenTarget(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -455,6 +600,80 @@ const s = {
     display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
     padding: '40px 20px', boxSizing: 'border-box',
   },
+  // Projects view
+  projectsContainer: { maxWidth: 700, width: '100%' },
+  newTemplateBtn: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    width: '100%', padding: '18px 24px', marginBottom: 20,
+    border: '2px dashed #E0D6CC', borderRadius: 16,
+    background: '#fff', cursor: 'pointer',
+    fontFamily: "'Fredoka', sans-serif", fontSize: 16, fontWeight: 700,
+    color: '#FF6B35',
+  },
+  projectsLoading: {
+    textAlign: 'center', padding: '40px 20px',
+    fontFamily: "'Fredoka', sans-serif", fontSize: 16, fontWeight: 500, color: '#999',
+  },
+  projectsEmpty: {
+    textAlign: 'center', padding: '48px 20px',
+    background: '#fff', borderRadius: 20,
+    boxShadow: '0 4px 16px rgba(139, 90, 43, 0.08)',
+  },
+  templateList: { display: 'flex', flexDirection: 'column', gap: 12 },
+  templateCard: {
+    display: 'flex', alignItems: 'center', gap: 16,
+    padding: '18px 22px', borderRadius: 18,
+    background: '#fff', border: '1px solid rgba(255, 166, 107, 0.12)',
+    boxShadow: '0 4px 16px rgba(139, 90, 43, 0.08)',
+  },
+  templateInfo: { flex: 1, minWidth: 0 },
+  templateTitle: {
+    fontFamily: "'Fredoka', sans-serif", fontSize: 17, fontWeight: 700, color: '#333',
+    display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  templateDesc: {
+    fontFamily: "'Fredoka', sans-serif", fontSize: 13, fontWeight: 500, color: '#999',
+    display: 'block', marginTop: 4,
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  templateMeta: {
+    display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap',
+  },
+  templateChip: {
+    fontFamily: "'Fredoka', sans-serif", fontSize: 11, fontWeight: 600,
+    padding: '2px 8px', borderRadius: 6, background: '#F0E6DD', color: '#8B5A2B',
+  },
+  templateDate: {
+    fontFamily: "'Fredoka', sans-serif", fontSize: 11, fontWeight: 500, color: '#BBB',
+  },
+  templateActions: {
+    display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0,
+  },
+  templateEditBtn: {
+    padding: '8px 16px', border: 'none', borderRadius: 10,
+    background: 'linear-gradient(135deg, #FF6B35 0%, #FF8F5E 100%)',
+    color: '#fff', fontFamily: "'Fredoka', sans-serif", fontSize: 13,
+    fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+  },
+  templateDeleteBtn: {
+    padding: '6px 16px', border: '1.5px solid #E0D6CC', borderRadius: 10,
+    background: '#fff', fontFamily: "'Fredoka', sans-serif", fontSize: 12,
+    fontWeight: 600, color: '#999', cursor: 'pointer', whiteSpace: 'nowrap',
+  },
+  deleteConfirmRow: {
+    display: 'flex', gap: 4,
+  },
+  deleteConfirmYes: {
+    padding: '6px 12px', border: 'none', borderRadius: 8,
+    background: '#E74C3C', color: '#fff', fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+  },
+  deleteConfirmNo: {
+    padding: '6px 12px', border: '1.5px solid #E0D6CC', borderRadius: 8,
+    background: '#fff', color: '#999', fontFamily: "'Fredoka', sans-serif",
+    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+  },
+  // Metadata view
   metaContainer: { maxWidth: 600, width: '100%' },
   backBtn: {
     padding: '8px 16px', border: '2px solid #E0D6CC', borderRadius: 12,
@@ -556,5 +775,16 @@ const s = {
   editorSidebar: {
     width: 260, flexShrink: 0, overflowY: 'auto',
     borderLeft: '1px solid #E0D6CC', background: '#fff',
+  },
+  // Icon generator overlay
+  iconGenOverlay: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.5)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+  },
+  iconGenModal: {
+    background: '#fff', borderRadius: 20, padding: 0,
+    maxWidth: 520, width: '95%', maxHeight: '90vh', overflowY: 'auto',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
   },
 };

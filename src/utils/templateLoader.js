@@ -1,7 +1,7 @@
 // templateLoader.js — Load/save/list workshop templates from Firebase
 // Firebase path: templates/{templateId}
 
-import { ref, get, set, push, update } from 'firebase/database';
+import { ref, get, set, push, update, remove } from 'firebase/database';
 import { db } from '../firebase';
 import { EXAMPLE_TEMPLATE } from '../schema/exampleTemplate';
 import { validateTemplate } from '../schema/validateTemplate';
@@ -99,6 +99,13 @@ export async function listTemplates() {
     console.error('[templateLoader] listTemplates error:', err);
     return [];
   }
+}
+
+/**
+ * Delete a template from Firebase by ID.
+ */
+export async function deleteTemplateFromFirebase(templateId) {
+  await remove(ref(db, `${TEMPLATES_PATH}/${templateId}`));
 }
 
 /**
