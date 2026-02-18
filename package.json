@@ -11,6 +11,8 @@
   "dependencies": {
     "firebase": "^12.9.0",
     "firebase-tools": "^15.6.0",
+    "jspdf": "^4.1.0",
+    "jspdf-autotable": "^5.0.7",
     "netlify-cli": "^23.15.1",
     "pdfjs-dist": "^4.4.168",
     "qrcode.react": "^4.2.0",

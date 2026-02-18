@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProject } from '../contexts/ProjectContext';
 import ProjectSettings from './ProjectSettings';
+
+const WochenberichtGenerator = lazy(() => import('./WochenberichtGenerator'));
 
 function CreateProjectModal({ onClose, onCreate }) {
   const [name, setName] = useState('');
@@ -119,6 +121,7 @@ export default function AdminDashboard() {
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [settingsTarget, setSettingsTarget] = useState(null);
+  const [wochenberichtTarget, setWochenberichtTarget] = useState(null);
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Lehrer';
 
@@ -217,6 +220,13 @@ export default function AdminDashboard() {
                       Projekt starten
                     </button>
                     <button
+                      onClick={() => setWochenberichtTarget(proj)}
+                      style={styles.reportButton}
+                      title="Wochenbericht (PDF)"
+                    >
+                      {'\u{1F4CA}'}
+                    </button>
+                    <button
                       onClick={() => setSettingsTarget(proj)}
                       style={styles.configButton}
                       title="Projekt einrichten"
@@ -251,6 +261,18 @@ export default function AdminDashboard() {
           onClose={() => setDeleteTarget(null)}
           onConfirm={deleteProject}
         />
+      )}
+
+      {wochenberichtTarget && (
+        <Suspense fallback={null}>
+          <WochenberichtGenerator
+            className={wochenberichtTarget.className}
+            projectId={wochenberichtTarget.id}
+            project={wochenberichtTarget}
+            teacherName={displayName}
+            onClose={() => setWochenberichtTarget(null)}
+          />
+        </Suspense>
       )}
     </div>
   );
@@ -421,6 +443,18 @@ const styles = {
     fontWeight: 700,
     cursor: 'pointer',
     boxShadow: '0 4px 14px rgba(0, 180, 216, 0.25)',
+  },
+  reportButton: {
+    width: 44,
+    height: 44,
+    border: '2px solid #C8E6C9',
+    borderRadius: 12,
+    background: '#E8F5E9',
+    fontSize: 18,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   configButton: {
     width: 44,

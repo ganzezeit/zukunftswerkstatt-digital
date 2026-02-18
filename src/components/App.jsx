@@ -29,6 +29,9 @@ const QuizDialog = lazy(() => import('./QuizDialog'));
 const ChatManager = lazy(() => import('./ChatManager'));
 const ArtStudio = lazy(() => import('./ArtStudio'));
 const WeeklyReport = lazy(() => import('./WeeklyReport'));
+const WochenberichtGenerator = lazy(() => import('./WochenberichtGenerator'));
+const TagesberichtModal = lazy(() => import('./TagesberichtModal'));
+const TagesberichtList = lazy(() => import('./TagesberichtList'));
 const EnergizerPopup = lazy(() => import('./EnergizerPopup'));
 
 /*
@@ -60,6 +63,9 @@ export default function App() {
   const [artStudioMode, setArtStudioMode] = useState(null); // null | 'room' | 'studio'
   const [showWeeklyReport, setShowWeeklyReport] = useState(false);
   const [showEnergizerPopup, setShowEnergizerPopup] = useState(false);
+  const [showWochenberichtGen, setShowWochenberichtGen] = useState(false);
+  const [showTagesberichtList, setShowTagesberichtList] = useState(false);
+  const [pendingTagesberichtDay, setPendingTagesberichtDay] = useState(null);
   const [freeEnergizer, setFreeEnergizer] = useState(false);
   const [freeEnergizerData, setFreeEnergizerData] = useState(null);
   const screenBeforeFreeEnergizer = useRef(null);
@@ -336,6 +342,18 @@ export default function App() {
       playCompleteSound();
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3500);
+      // Trigger Tagesbericht modal after day completion
+      if (className) {
+        import('firebase/database').then(({ ref, get }) => {
+          import('../firebase').then(({ db }) => {
+            get(ref(db, `classes/${className}/dailyReports/${day.id}`)).then(snap => {
+              if (!snap.val()) {
+                setTimeout(() => setPendingTagesberichtDay(day.id), 2000);
+              }
+            }).catch(() => {});
+          });
+        }).catch(() => {});
+      }
     }
 
     setState(newState);
@@ -663,6 +681,8 @@ export default function App() {
           onForceSave={handleForceSave}
           lastSaveTimestamp={lastSaveTimestamp}
           onOpenWeeklyReport={() => { setShowWeeklyReport(true); setShowTeacherPanel(false); }}
+          onOpenTagesberichte={() => { setShowTagesberichtList(true); setShowTeacherPanel(false); }}
+          onOpenWochenberichtGen={() => { setShowWochenberichtGen(true); setShowTeacherPanel(false); }}
         />
         </Suspense>
       )}
@@ -715,6 +735,39 @@ export default function App() {
           <WeeklyReport
             className={className}
             onClose={() => setShowWeeklyReport(false)}
+          />
+        </Suspense>
+      )}
+
+      {showWochenberichtGen && (
+        <Suspense fallback={null}>
+          <WochenberichtGenerator
+            className={className}
+            project={project}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setShowWochenberichtGen(false)}
+          />
+        </Suspense>
+      )}
+
+      {showTagesberichtList && (
+        <Suspense fallback={null}>
+          <TagesberichtList
+            className={className}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setShowTagesberichtList(false)}
+          />
+        </Suspense>
+      )}
+
+      {pendingTagesberichtDay && (
+        <Suspense fallback={null}>
+          <TagesberichtModal
+            dayNumber={pendingTagesberichtDay}
+            className={className}
+            teacherName={project?.teacherName || ''}
+            onClose={() => setPendingTagesberichtDay(null)}
+            onSaved={() => setPendingTagesberichtDay(null)}
           />
         </Suspense>
       )}

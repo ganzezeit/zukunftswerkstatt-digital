@@ -27,6 +27,8 @@ export default function TeacherPanel({
   onForceSave,
   lastSaveTimestamp,
   onOpenWeeklyReport,
+  onOpenTagesberichte,
+  onOpenWochenberichtGen,
 }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [localSaveStatus, setLocalSaveStatus] = useState('idle');
@@ -185,17 +187,35 @@ export default function TeacherPanel({
           </>
         )}
 
-        {/* Weekly Report */}
-        {klassenName && onOpenWeeklyReport && (
+        {/* Reports */}
+        {klassenName && (onOpenWeeklyReport || onOpenTagesberichte || onOpenWochenberichtGen) && (
           <>
-            <div style={styles.sectionHeader}>Bericht</div>
+            <div style={styles.sectionHeader}>Berichte</div>
             <div style={styles.actions}>
-              <button
-                style={{ ...styles.actionButton, background: '#E3F2FD', color: '#1565C0' }}
-                onClick={() => handleButton(onOpenWeeklyReport)}
-              >
-                {'\u{1F4CB}'} Wochenbericht erstellen
-              </button>
+              {onOpenTagesberichte && (
+                <button
+                  style={{ ...styles.actionButton, background: '#FFF3E0', color: '#E65100' }}
+                  onClick={() => handleButton(onOpenTagesberichte)}
+                >
+                  {'\u{1F4DD}'} Tagesberichte
+                </button>
+              )}
+              {onOpenWochenberichtGen && (
+                <button
+                  style={{ ...styles.actionButton, background: '#E8F5E9', color: '#2E7D32' }}
+                  onClick={() => handleButton(onOpenWochenberichtGen)}
+                >
+                  {'\u{1F4CA}'} Wochenbericht (PDF)
+                </button>
+              )}
+              {onOpenWeeklyReport && (
+                <button
+                  style={{ ...styles.actionButton, background: '#E3F2FD', color: '#1565C0' }}
+                  onClick={() => handleButton(onOpenWeeklyReport)}
+                >
+                  {'\u{1F4CB}'} Wochenbericht (Druck)
+                </button>
+              )}
             </div>
           </>
         )}
